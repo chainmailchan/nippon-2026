@@ -1,0 +1,6 @@
+{
+  "batches": [
+    { "file": "R1-savoy.json" },
+    { "file": "R2-omakase.json" }
+  ]
+}

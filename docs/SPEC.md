@@ -1,6 +1,6 @@
-# Nippon 2026 — trip app spec (v0.2, draft)
+# Nippon 2026 — trip app spec (v0.3)
 
-Status: **planning** · wireframes v0.2 (private Claude artifact: https://claude.ai/artifact/4gTrtK6MS5cqWtsmDVaZSo) · no app code yet.
+Status: **v1 built, in testing** · wireframes v0.2 (private Claude artifact: https://claude.ai/artifact/4gTrtK6MS5cqWtsmDVaZSo).
 
 > **This repository is public.** Never commit booking references, PINs, confirmation codes, the personal
 > itinerary, travellers' details or anything about home. Those live only in the private data store (§4).
@@ -92,23 +92,25 @@ Navigation: tab bar **Map · Today · Trip · Lists** on iPhone; on iPad a left 
 
 ---
 
-## 4. Stack (recommendation v0.2 — awaiting owner's go-ahead)
+## 4. Stack (decided)
 
 **No Google Cloud billing account.** Same approach as the owner's previous city-trip app, plus shared editing:
 
 | Part | Choice | Notes |
 |---|---|---|
-| Base map | Free OpenStreetMap-based map (Leaflet or MapLibre) | Default OSM tiles label Japan mostly in Japanese; test a free style with English names before committing. Pins and cards carry English/romaji regardless. |
+| Base map | Leaflet 1.9 + markercluster, OpenStreetMap tiles | Standard OSM labels Japan mostly in Japanese; a second style (openstreetmap.de) writes names in Latin script. Pins and cards carry English/romaji regardless. |
 | Google Maps buttons | Google Maps URLs (no key) | Exact place page when a `place_id` or a pasted Google Maps link is stored; otherwise search by name + address. |
 | Adding a place on the phone | Paste a Google Maps share link → confirm the pin ("I'm here" or move the map) | One extra step versus an in-app Google search. Short share links can't be resolved in the browser, so the pin is confirmed by hand. |
 | Shared data | **Firebase, free plan** (Firestore + anonymous auth) | No card. Live sync across the three travellers' devices, local cache for offline. Needed because all three edit; the previous app was read-only. |
-| Hosting | GitHub Pages if the repo stays public; Firebase Hosting (free) if it goes private | Users open a web address; they never need repo access. |
+| Hosting | GitHub Pages (public repo) | Users open a web address; they never need repo access. |
 | Access | Private **trip key**, entered once per device | No sign-in screens; works in home-screen mode. |
 
 Upgrade path, only if wanted later: a Google Maps API key (needs billing) would add in-app place search and exact place IDs for
 researched places. Not needed for v1.
 
-Booking data lives only in the data store, never in this repo. Front end: static PWA (Vite + TypeScript + Preact), service worker.
+Booking data lives only in the data store, never in this repo. Front end: static PWA in plain ES modules (no build step), vendored
+libraries in `vendor/`, service worker. Addresses are geocoded on the device (GSI, then Nominatim). Firestore rules template:
+`firestore.rules` (the real trip key is pasted in the Firebase console, never committed).
 
 ---
 
@@ -116,7 +118,7 @@ Booking data lives only in the data store, never in this repo. Front end: static
 
 ```ts
 type ISO = string;                    // ISO 8601 with offset, e.g. "2026-10-01T19:00+09:00"
-type AreaKey = "disney" | "tokyo" | "fuji" | "hakone";
+type AreaKey = "disney" | "tokyo" | "fuji" | "hakone" | "kamakura";
 
 interface Place {
   id: string;
@@ -130,13 +132,17 @@ interface Place {
   lat: number; lng: number;
   address_ja?: string; address_en?: string;
   gmaps?: { place_id?: string; url?: string };
+  near?: string;                      // locality hint for Maps search when there's no address yet
+  station?: string;
+  coord?: "source" | "gsi" | "osm" | "pin" | "link";  // where the pin came from
   phone?: string; website?: string;
   summary?: string;                   // one line on the card
+  order?: string;                     // what to order
   notes?: string;                     // ours
   practical?: {
     hours?: string; closed?: string; last_order?: string;
     payment?: "cash" | "card" | "both"; queue?: string;
-    reservation?: "required" | "recommended" | "walk-in"; price?: string;
+    reservation?: string; price?: string; seats?: string; rules?: string;
     as_of?: string;                   // when hours/prices were checked
   };
   photo?: { shot?: string; best_time?: string; access?: string; rules?: string; video?: string; gear?: string };
@@ -145,10 +151,12 @@ interface Place {
   planned?: { date: string; slot?: "breakfast" | "lunch" | "dinner" | "am" | "pm" | "night" };
   origin: "manual" | "claude";        // never changes
   added: { by: string; at: ISO };
-  edited?: { by: string; at: ISO };
+  edited?: { by: string; at: ISO };   // set by the place editor only
   research?: {
-    batch: string; at: ISO; sources: string[];
+    batch: string; at: ISO;
+    sources: { type: "S" | "G" | "T" | "P" | "M" | "K"; url: string; title?: string }[];
     confidence?: "high" | "medium" | "low";
+    why?: string; notes?: string; open_questions?: string[];
     review: "pending" | "kept" | "skipped";
   };
 }
@@ -219,9 +227,10 @@ Times are stored with offsets and shown in JST; flights show local time at each 
 
 ## 7. Research batches (how Claude adds places)
 
-- File: `data/research/<batch-id>.json` — **public place information only**.
-- Shape: `{ "batch": "R1-tokyo-tsukemen", "created": ISO, "brief": "what was asked", "places": [ Place… ] }`
-  with `origin: "claude"` and `research.review: "pending"`.
+- File: `data/research/<batch-id>.json` — **public place information only**, listed in `data/research/index.json`.
+  No trip dates, party size or other itinerary details in batch text.
+- Shape: `{ "batch": "R1-savoy", "title": "…", "created": "YYYY-MM-DD", "brief": "what was asked", "notes": "batch-wide caveats",
+  "places": [ Place… ] }` with `origin: "claude"`; the inbox review is stored per place in the shared `reviews` collection.
 - Rules:
   - Every place cites at least one source URL; hours and prices carry `practical.as_of`.
   - Unknown → omit the field. Never infer hours, prices, rules or names.
@@ -254,19 +263,17 @@ Times are stored with offsets and shown in JST; flights show local time at each 
 
 ## 9. Decisions
 
-Settled: one map with areas · glyph pins · all three travellers edit · iPad = Wi-Fi-only night planner.
+Settled: one map with areas · glyph pins · all three travellers edit · iPad = Wi-Fi-only night planner ·
+free OSM map + Firebase free plan, no billing (Google Cloud billing only if the map styles disappoint) · public repo on
+GitHub Pages · no Info/Guide tab · no figurine photo spots or dessert benchmarking.
 
 Open:
-1. Go-ahead on §4 (free map + Firebase free plan, no billing).
-2. Repo public (GitHub Pages) or private (Firebase Hosting).
-3. Add a **Guide** tab like the previous app's Info tab (getting around, eating, driving, photo rules)?
-4. Extra place types: figurine photo spots, gyms/running, dessert benchmarking, EDC shops?
-5. After testing v1: default pin style, theme and layout.
+1. After testing v1: area shortcuts, research inbox, default pin style, theme, layout and map style.
 
 ## 10. Lessons from the previous app (single-file Leaflet app)
 
 Keep: free OSM map · Google Maps URLs with `query_place_id` · source tags on every place · "closed today" badges ·
-category intros · an Info tab.
+category intros.
 Change: colour-only teardrop pins → glyph pins · single fixed base → GPS or per-night base · read-only data → shared editing ·
 dark only → light/dark/auto.
 
@@ -274,8 +281,8 @@ dark only → light/dark/auto.
 
 | Step | Scope |
 |---|---|
-| Decide | §9 answers; booking gaps filled in privately |
-| Build v1 | Map, pins, filters, near-me, cards, Google Maps hand-off, Today / Trip / Lists, add & edit, research inbox, theme/layout/pin options, offline |
+| Decide | §9 answers; booking gaps filled in privately — done except testing feedback |
+| Build v1 | Map, pins, filters, near-me, cards, Google Maps hand-off, Today / Trip / Lists, add & edit, research inbox, theme/layout/pin options, offline — **done** |
 | Data | Bookings into the private store; research batches (Tokyo food, Pokémon & card shops, clothing, insoles, Disney food & photo spots, Fuji/Hakone photo spots, onsen, fuel near the car return) |
 | Test | Install on all four devices; GPS, Google Maps hand-off, dark mode, offline |
 | Later | Push reminders, weather / Fuji visibility, expenses |

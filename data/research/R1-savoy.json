@@ -1,0 +1,253 @@
+{
+  "batch": "R1-savoy",
+  "title": "SAVOY pizza — Tokyo branches",
+  "created": "2026-10-03",
+  "brief": "Every current SAVOY branch in Tokyo, so you can pick one. Public information only; checked against the official site, Tabelog, AutoReserve and Hot Pepper.",
+  "notes": "All three Azabu-Juban shops (Main Store, Tomato & Cheese, Hanare) close on Wednesdays; the Main Store has no lunch on Thursdays. Mishuku-dori closes Wednesdays and Thursdays; Giardino closes Mondays. Left out: SAVOY Spa Japo, inside a spa complex in Higashi-Kurume (far north-west suburbs), because I couldn't confirm it still trades.",
+  "places": [
+    {
+      "id": "savoy-azabujuban-honten",
+      "name": "SAVOY Azabu-Juban Main Store",
+      "ja": "SAVOY 麻布十番本店",
+      "romaji": "SAVOY Azabu-Jūban Honten",
+      "category": "restaurant",
+      "tags": ["pizza", "neapolitan", "wood-fired", "counter", "private-room"],
+      "meals": ["lunch", "dinner"],
+      "area": "tokyo",
+      "address_en": "Orient Azabu 1F, 2-20-12 Azabu-Juban, Minato-ku, Tokyo 106-0045",
+      "address_ja": "東京都港区麻布十番2-20-12 オリエント麻布1F",
+      "phone": "03-6665-8102",
+      "website": "https://savoy-pizza.com/azabujyuban/en",
+      "station": "Azabu-Juban, 2–3 min walk",
+      "summary": "SAVOY's flagship — the original 1995 Moto-Azabu pizzeria, relocated here in 2023 — with wood-fired pizza at counters facing the ovens.",
+      "order": "The original SAVOY pizzas: Margherita and Marinara (from the classic counter). Seasonal creative pizzas too.",
+      "practical": {
+        "hours": "Mon, Tue, Fri–Sun 11:30–15:00 & 17:30–22:00; Thu 17:30–22:00",
+        "closed": "Wednesday; no lunch on Thursday",
+        "price": "Tabelog: lunch ¥1,000–1,999, dinner ¥2,000–2,999. AutoReserve average: lunch ¥3,500, dinner ¥5,000",
+        "reservation": "Accepted — online (AutoReserve) or phone",
+        "seats": "41 (AutoReserve); private rooms for 6 and 8 (Tabelog)",
+        "as_of": "2026-10"
+      },
+      "research": {
+        "confidence": "high",
+        "notes": "Reopened here on 25 Mar 2023 after the Moto-Azabu shop closed for rebuilding. Opened as three counters under one roof: 'savoy Classic' (original menu), 'Domi-LA!' (new-style pizzas) and WOODSTOCK TOKYO (now listed as closed). AutoReserve showed lunch seatings at 11:30 and 13:00, dinner at 17:30, 19:00 and 20:30.",
+        "open_questions": [
+          "Do 'savoy Classic' and 'Domi-LA' still run as separate counters? The official site now shows one main store.",
+          "Last-order times and payment methods not found.",
+          "The Azabu-Juban shopping-street directory seemed to give a different closed day; the official site and Tabelog both say Wednesday."
+        ],
+        "sources": [
+          {"type": "S", "url": "https://savoy-pizza.com/azabujyuban/en", "title": "SAVOY Azabujuban (official)"},
+          {"type": "T", "url": "https://tabelog.com/en/tokyo/A1307/A130702/13283496/", "title": "savoy クラシック — Tabelog"},
+          {"type": "T", "url": "https://tabelog.com/en/tokyo/A1307/A130702/13283220/", "title": "Domi-LA — Tabelog"},
+          {"type": "P", "url": "https://autoreserve.com/ja/restaurants/TxdeqSt74Cw1RmmgdoTL", "title": "SAVOY 麻布十番本店 — AutoReserve booking page"},
+          {"type": "P", "url": "https://magazine.tabelog.com/articles/263257", "title": "Reopening report — Tabelog Magazine"},
+          {"type": "P", "url": "https://tokyo-calendar.jp/article/26439", "title": "Three SAVOYs under one roof — Tokyo Calendar"}
+        ]
+      },
+      "origin": "claude"
+    },
+    {
+      "id": "savoy-tomato-cheese",
+      "name": "SAVOY Tomato & Cheese",
+      "ja": "SAVOY とまととちーず店",
+      "romaji": "SAVOY Tomato to Chīzu-ten",
+      "category": "restaurant",
+      "tags": ["pizza", "neapolitan", "wood-fired", "counter"],
+      "meals": ["lunch", "dinner"],
+      "area": "tokyo",
+      "address_en": "M2K Stage 1F, 3-3-13 Azabu-Juban, Minato-ku, Tokyo",
+      "address_ja": "東京都港区麻布十番3-3-13 M2Kステージ 1F",
+      "phone": "03-3451-6699",
+      "website": "https://savoy-pizza.com/tomatotocheese/en",
+      "station": "Azabu-Juban, 3–6 min walk",
+      "summary": "Ten-seat counter pizzeria built around the wood-fired oven; the Margherita is the signature.",
+      "order": "Margherita — the shop's signature (fresh tomato and mozzarella on long-fermented dough).",
+      "practical": {
+        "hours": "11:30–15:00 & 17:30–22:00",
+        "closed": "Wednesday",
+        "last_order": "Lunch 14:30, dinner 21:30",
+        "price": "Tabelog dinner ¥4,000–4,999. AutoReserve average about ¥4,000–4,500 lunch, ¥5,000–6,500 dinner",
+        "reservation": "Accepted — phone or online (AutoReserve)",
+        "queue": "Reviews describe lunch queues: about 10 groups at the 11:30 opening on one visit, full within ten minutes on another",
+        "seats": "10, counter only",
+        "as_of": "2026-10"
+      },
+      "research": {
+        "confidence": "high",
+        "notes": "Open since April 2013. SAVOY Azabu-Juban Hanare is in the basement of the same building.",
+        "open_questions": [
+          "Lunch end: official site 15:00 (last order 14:30); Tabelog 14:30.",
+          "Payment methods not found.",
+          "Queue reports are from reviews of unknown date."
+        ],
+        "sources": [
+          {"type": "S", "url": "https://savoy-pizza.com/tomatotocheese/en", "title": "SAVOY Tomato and cheese (official)"},
+          {"type": "T", "url": "https://tabelog.com/en/tokyo/A1307/A130702/13155593/", "title": "SAVOY とまととちーず店 — Tabelog"},
+          {"type": "T", "url": "https://tabelog.com/tokyo/A1307/A130702/13155593/dtlrvwlst/", "title": "Reviews — Tabelog"},
+          {"type": "P", "url": "https://autoreserve.com/ja/restaurants/r6UDM95V9j3GpZzSRfSD", "title": "AutoReserve booking page"},
+          {"type": "P", "url": "https://retty.me/area/PRE13/ARE14/SUB1405/100000799906/reports/", "title": "Reviews — Retty"}
+        ]
+      },
+      "origin": "claude"
+    },
+    {
+      "id": "savoy-azabujuban-hanare",
+      "name": "SAVOY Azabu-Juban Hanare",
+      "ja": "SAVOY 麻布十番店 Hanare",
+      "romaji": "SAVOY Azabu-Jūban-ten Hanare",
+      "category": "restaurant",
+      "tags": ["pizza", "neapolitan", "wood-fired", "counter"],
+      "meals": ["lunch", "dinner"],
+      "area": "tokyo",
+      "address_en": "M2K Stage B1F, 3-3-13 Azabu-Juban, Minato-ku, Tokyo",
+      "address_ja": "東京都港区麻布十番3-3-13 M2Kステージ B1F",
+      "phone": "03-6821-8658",
+      "website": "https://savoy-pizza.com/hanare/ja",
+      "station": "Azabu-Juban, about 300 m",
+      "summary": "The newest SAVOY (opened April 2026): a 10-seat basement counter under Tomato & Cheese, with wood-fired pizza in a calmer setting.",
+      "practical": {
+        "hours": "11:30–15:00 & 17:30–22:00, holidays included",
+        "closed": "Wednesday",
+        "last_order": "Lunch 14:30, dinner 21:30",
+        "price": "Tabelog ¥4,000–4,999 (reviews average ¥2,000–2,999). AutoReserve average ¥5,000",
+        "payment": "Cards (Visa, Mastercard, JCB, Amex, Diners), e-money, QR (Tabelog)",
+        "reservation": "Accepted — phone or online (AutoReserve)",
+        "seats": "10, counter",
+        "as_of": "2026-10"
+      },
+      "research": {
+        "confidence": "high",
+        "notes": "The official site describes it as carrying on the main store's approach in a more relaxed atmosphere.",
+        "open_questions": [
+          "Hours: the official site gives split hours; Tabelog shows 11:00–22:00 without a break.",
+          "How its menu differs from Tomato & Cheese upstairs."
+        ],
+        "sources": [
+          {"type": "S", "url": "https://savoy-pizza.com/hanare/ja", "title": "SAVOY 麻布十番店 Hanare (official)"},
+          {"type": "T", "url": "https://tabelog.com/en/tokyo/A1307/A130702/13321715/", "title": "SAVOY 麻布十番店 Hanare — Tabelog"},
+          {"type": "P", "url": "https://autoreserve.com/en/restaurants/nwK9pWmm4D6hucsrPe9m", "title": "AutoReserve booking page"}
+        ]
+      },
+      "origin": "claude"
+    },
+    {
+      "id": "savoy-kaminarimon",
+      "name": "SAVOY Kaminarimon",
+      "ja": "SAVOY 雷門店",
+      "romaji": "SAVOY Kaminarimon-ten",
+      "category": "restaurant",
+      "tags": ["pizza", "neapolitan", "counter", "asakusa"],
+      "meals": ["lunch", "dinner"],
+      "area": "tokyo",
+      "address_en": "MISTY Bldg 1F, 1-2-8 Asakusa, Taito-ku, Tokyo",
+      "address_ja": "東京都台東区浅草1-2-8 MISTY共同ビル 1F",
+      "phone": "03-5830-3444",
+      "website": "https://savoy-kaminarimon.live-web.jp/",
+      "station": "Asakusa, 1–5 min walk; steps from the Kaminarimon gate",
+      "summary": "SAVOY's Asakusa branch (opened August 2023): a small counter pizza bar by Kaminarimon, with a shorter pizza menu than the other branches.",
+      "order": "Margherita or Marinara. A red-bean (anko) dessert pizza is reported as a Kaminarimon-only item.",
+      "practical": {
+        "hours": "11:30–15:00 & 17:30–22:00",
+        "price": "Tabelog: lunch ¥1,000–1,999, dinner ¥2,000–2,999 (another write-up: about ¥2,500 lunch, ¥4,000 dinner)",
+        "reservation": "Accepted — phone or online (AutoReserve); seating time about 90 min",
+        "seats": "Ground-floor counter; basement private room for 6–12",
+        "as_of": "2026-10"
+      },
+      "research": {
+        "confidence": "medium",
+        "notes": "Tabelog reviewers note a narrower pizza line-up than at other SAVOY shops.",
+        "open_questions": [
+          "Regular closing day not found.",
+          "Payment methods not found."
+        ],
+        "sources": [
+          {"type": "S", "url": "https://savoy-kaminarimon.live-web.jp/", "title": "SAVOY雷門店 (shop website)"},
+          {"type": "T", "url": "https://tabelog.com/en/tokyo/A1311/A131102/13288583/", "title": "SAVOY Kaminarimon — Tabelog"},
+          {"type": "P", "url": "https://magazine.tabelog.com/articles/316231", "title": "Opening report — Tabelog Magazine"},
+          {"type": "P", "url": "https://autoreserve.com/en/restaurants/5DV33D4nzRrWuk5E3X58", "title": "AutoReserve booking page"},
+          {"type": "P", "url": "https://oshi-china.com/asakusa_savoykaminarimon/", "title": "SAVOY雷門店 write-up (anko pizza)"}
+        ]
+      },
+      "origin": "claude"
+    },
+    {
+      "id": "savoy-mishuku-dori",
+      "name": "SAVOY Mishuku-dori",
+      "ja": "SAVOY 三宿通り店",
+      "romaji": "SAVOY Mishuku-dōri-ten",
+      "category": "restaurant",
+      "tags": ["pizza", "pasta", "terrace"],
+      "meals": ["lunch", "dinner"],
+      "area": "tokyo",
+      "address_en": "1F, 1-23-13 Shimouma, Setagaya-ku, Tokyo 154-0002",
+      "address_ja": "東京都世田谷区下馬1-23-13 フェルテロアール祐天寺 1F",
+      "phone": "03-3795-8739",
+      "website": "https://www.instagram.com/savoy_mishuku/",
+      "station": "Yūtenji, 10–15 min walk (Sangen-jaya about 20 min)",
+      "summary": "Neighbourhood SAVOY on Mishuku-dori, with tables and a terrace, serving pizza and pasta.",
+      "practical": {
+        "hours": "Mon, Tue, Fri 11:30–14:30 & 17:30–21:00; Sat, Sun, holidays 11:30–15:00 & 17:30–21:00",
+        "closed": "Wednesday and Thursday (irregular closures possible)",
+        "last_order": "Lunch 14:00 weekdays, 14:30 weekends; dinner 20:30",
+        "price": "AutoReserve average: lunch ¥1,500, dinner ¥4,000",
+        "payment": "Cards (Visa, Mastercard, Amex, Diners, JCB) per Hot Pepper",
+        "reservation": "Accepted — phone, AutoReserve, or Tabelog's line 050-5868-5265",
+        "as_of": "2026-10"
+      },
+      "research": {
+        "confidence": "medium",
+        "notes": "Reopened after a renovation on 1 Nov 2025 with more seats; weekday lunch (pizza and sandwiches) from Feb 2026. Tabelog Pizza Hyakumeiten 2019. Terrace seats allow pets.",
+        "open_questions": [
+          "Seat count after the renovation (listings say 26, 38 or 41).",
+          "Opening days: an older listing showed weekends only; current listings show five days."
+        ],
+        "sources": [
+          {"type": "T", "url": "https://tabelog.com/en/tokyo/A1317/A131701/13024109/", "title": "SAVOY Mishuku-dori — Tabelog"},
+          {"type": "P", "url": "https://www.hotpepper.jp/strJ003433009/", "title": "SAVOY 三宿通り店 — Hot Pepper"},
+          {"type": "P", "url": "https://autoreserve.com/en/restaurants/APUWiJEgg9FjXL4bWznM", "title": "AutoReserve booking page"},
+          {"type": "S", "url": "https://www.instagram.com/savoy_mishuku/", "title": "@savoy_mishuku (Instagram)"}
+        ]
+      },
+      "origin": "claude"
+    },
+    {
+      "id": "savoy-giardino-meguro",
+      "name": "PIZZA Giardino SAVOY",
+      "ja": "PIZZAジャルディーノ SAVOY",
+      "romaji": "PIZZA Jarudīno SAVOY",
+      "category": "restaurant",
+      "tags": ["pizza", "neapolitan", "stone-oven", "meguro"],
+      "meals": ["lunch", "dinner"],
+      "area": "tokyo",
+      "address_en": "Room 101, 2-2-16 Shimomeguro, Meguro-ku, Tokyo",
+      "address_ja": "東京都目黒区下目黒2-2-16 第六千陽ビル101",
+      "phone": "03-6879-0714",
+      "station": "Meguro (JR) west exit, 7 min walk",
+      "summary": "SAVOY's Meguro sister shop on a quiet Shimomeguro street, with Neapolitan pizza from a stone oven.",
+      "practical": {
+        "hours": "Tue–Fri 11:30–14:30 & 17:30–22:00; Sat, Sun, holidays 11:30–15:00 & 17:30–22:00",
+        "closed": "Monday (Hot Pepper: open on a holiday Monday, closed the next day)",
+        "last_order": "Lunch 14:00 weekdays, 14:30 weekends; dinner 21:30",
+        "price": "Tabelog: lunch ¥1,000–1,999, dinner ¥4,000–4,999",
+        "reservation": "Accepted — online (AutoReserve) or phone",
+        "as_of": "2026-10"
+      },
+      "research": {
+        "confidence": "medium",
+        "notes": "Hot Pepper shows different, probably older, hours (dinner 18:00–22:30).",
+        "open_questions": [
+          "Hours differ between AutoReserve (used here) and Hot Pepper."
+        ],
+        "sources": [
+          {"type": "T", "url": "https://tabelog.com/en/tokyo/A1316/A131601/13176241/", "title": "PIZZA Giardino SAVOY — Tabelog"},
+          {"type": "P", "url": "https://autoreserve.com/en/restaurants/f59QEfpcdzMGxyKY6ed4", "title": "AutoReserve booking page"},
+          {"type": "P", "url": "https://www.hotpepper.jp/strJ001128426/", "title": "PIZZA ジャルディーノ SAVOY 目黒店 — Hot Pepper"},
+          {"type": "P", "url": "https://www.atpress.ne.jp/news/55168", "title": "Opening announcement — @Press"}
+        ]
+      },
+      "origin": "claude"
+    }
+  ]
+}

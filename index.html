@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en" data-theme="light" data-density="clean" data-pins="signage">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F3F4F6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Nippon">
+<meta name="description" content="Trip companion: places, bookings and day plans on one map.">
+<title>Nippon 2026</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+<link rel="stylesheet" href="vendor/leaflet/MarkerCluster.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&amp;family=BIZ+UDPGothic:wght@400;700&amp;display=swap">
+<link rel="stylesheet" href="app/styles.css">
+<script>
+// Apply the saved look before first paint (no light flash at night).
+(function () {
+  try {
+    var p = JSON.parse(localStorage.getItem('nippon:prefs:v1') || '{}');
+    var t = p.theme || 'auto';
+    if (t === 'auto') t = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    var r = document.documentElement;
+    r.dataset.theme = t; r.dataset.density = p.density || 'clean'; r.dataset.pins = p.pins || 'signage';
+  } catch (e) {}
+})();
+</script>
+</head>
+<body>
+<div id="app">
+  <main>
+    <section id="view-map" class="view active" aria-label="Map">
+      <div id="map" role="application" aria-label="Map of places"></div>
+      <div id="map-top" class="top"></div>
+      <div class="fabs">
+        <button type="button" class="fab" data-action="map-options" aria-label="Map options"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/></svg></button>
+        <button type="button" class="fab" data-action="locate" aria-label="Show my location"><svg class="ic me-ic" viewBox="0 0 24 24" aria-hidden="true"><line x1="2" x2="5" y1="12" y2="12"/><line x1="19" x2="22" y1="12" y2="12"/><line x1="12" x2="12" y1="2" y2="5"/><line x1="12" x2="12" y1="19" y2="22"/><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="3"/></svg></button>
+      </div>
+      <div id="near" class="near"></div>
+    </section>
+    <section id="view-today" class="view screen" aria-label="Today"></section>
+    <section id="view-trip" class="view screen" aria-label="Trip"></section>
+    <section id="view-lists" class="view screen" aria-label="Lists"></section>
+  </main>
+  <nav class="tabs" aria-label="Sections">
+    <button type="button" class="tab" data-action="tab" data-tab="map"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z"/><path d="M15 5.764v15"/><path d="M9 3.236v15"/></svg><span>Map</span></button>
+    <button type="button" class="tab" data-action="tab" data-tab="today"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg><span>Today</span></button>
+    <button type="button" class="tab" data-action="tab" data-tab="trip"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 2v3"/><path d="M16 2v3"/><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M8 13h.01"/><path d="M12 13h.01"/><path d="M16 13h.01"/><path d="M8 17h.01"/><path d="M12 17h.01"/><path d="M16 17h.01"/></svg><span>Trip</span></button>
+    <button type="button" class="tab" data-action="tab" data-tab="lists"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 5h8"/><path d="M13 12h8"/><path d="M13 19h8"/><path d="m3 17 2 2 4-4"/><path d="m3 7 2 2 4-4"/></svg><span>Lists</span></button>
+  </nav>
+  <div id="overlays"></div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</div>
+<noscript>This app needs JavaScript.</noscript>
+<script src="vendor/leaflet/leaflet.js"></script>
+<script src="vendor/leaflet/leaflet.markercluster.js"></script>
+<script type="module" src="app/main.js"></script>
+</body>
+</html>
