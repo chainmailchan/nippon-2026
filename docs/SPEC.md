@@ -1,6 +1,6 @@
-# Nippon 2026 — trip app spec (v0.1, draft)
+# Nippon 2026 — trip app spec (v0.2, draft)
 
-Status: **planning** · wireframes v0.1 (private Claude artifact: https://claude.ai/artifact/4gTrtK6MS5cqWtsmDVaZSo) · no app code yet.
+Status: **planning** · wireframes v0.2 (private Claude artifact: https://claude.ai/artifact/4gTrtK6MS5cqWtsmDVaZSo) · no app code yet.
 
 > **This repository is public.** Never commit booking references, PINs, confirmation codes, the personal
 > itinerary, travellers' details or anything about home. Those live only in the private data store (§4).
@@ -10,7 +10,8 @@ Status: **planning** · wireframes v0.1 (private Claude artifact: https://claude
 ## 1. What the app is for
 
 A home-screen web app for three travellers on a two-week trip in Japan, in three segments:
-Tokyo Disney Resort → Tokyo city → self-drive around the Fuji Five Lakes and Odawara/Hakone (ending back in Tokyo).
+Tokyo Disney Resort → Tokyo city → self-drive around the Fuji Five Lakes, Odawara/Hakone and Kamakura.
+All three travellers can add and edit.
 
 Jobs, in priority order:
 
@@ -24,7 +25,7 @@ Jobs, in priority order:
 | iPhone 16 Pro Max (main editor) | 440 × 956 | |
 | iPhone 15 Pro Max | 430 × 932 | |
 | iPhone 16 Pro | 402 × 874 | narrowest — every layout must fit |
-| iPad Pro 9.7" (2016) | 768 × 1024 | maxes out at iPadOS 16 → **Safari 16 is the oldest engine to support** |
+| iPad Pro 9.7" (2016) | 768 × 1024 | maxes out at iPadOS 16 → **Safari 16 is the oldest engine to support**. Wi-Fi only, **no GPS**; used at night in the hotel to plan the next day |
 
 ---
 
@@ -32,11 +33,13 @@ Jobs, in priority order:
 
 ### 2.1 One map with area presets — not one map per segment
 
-- **One dataset, one map.** "Areas" are saved views: Tokyo Disney Resort · Tokyo · Fuji Five Lakes · Odawara/Hakone · Whole trip.
+- **One dataset, one map.** "Areas" are saved views: Tokyo Disney Resort · Tokyo · Fuji Five Lakes · Odawara/Hakone · Kamakura · Whole trip.
 - Why: the segments overlap in space and time (Tokyo bookings fall inside the driving segment; the car is returned at Haneda;
   Disney sits next to Tokyo). Separate maps would duplicate data and force a choice of map before you can see what's near.
+  (Agreed with the owner; area shortcuts to be tested in v1.)
 - **Launch behaviour:** GPS available → nearest area + "Near you" list. No GPS → today's planned area. Before the trip → planning view.
-- Each area remembers its own filters and a **default travel mode** for Directions (Disney: walk · Tokyo: transit · Fuji/Hakone: drive).
+  **iPad (no GPS):** opens on **Tomorrow** — next day's bookings, open meal slots, light times, and ideas measured from tonight's base.
+- Each area remembers its own filters and a **default travel mode** for Directions (Disney: walk · Tokyo: transit · Fuji/Hakone/Kamakura: drive).
 
 ### 2.2 Pins — glyph first, colour second
 
@@ -72,30 +75,40 @@ Jobs, in priority order:
 - Refs and PINs are **masked by default** (tap to reveal).
 - **Export to Calendar (.ics)** for bookings and cancel-by deadlines → dependable phone alerts without building push notifications.
 
+### 2.6 Bases — distances without GPS
+
+- Each night's accommodation is that night's **base**. Without GPS (the iPad, or location turned off) distances are measured from
+  the base, or from any place the user picks ("From: ‹place› ▾").
+- Meal slots know whether the base includes meals; slots not covered show as **Open**.
+
 ---
 
-## 3. Screens (wireframes v0.1)
+## 3. Screens (wireframes v0.2)
 
 1 Map (launch) · 2 Map, Dense + dark · 3 Area switcher · 4 Filters · 5 Pin card, booked · 6 Pin card, photo spot (expanded) ·
-7 Show in Japanese · 8 Today · 9 Trip · 10 Lists · 11 Add a place · 12 Research inbox · 13 Settings · 14 Pin styles & icon set · 15 iPad landscape.
+7 Show in Japanese · 8 Today · 9 Trip · 10 Lists · 11 Add a place · 12 Research inbox · 13 Settings · 14 Pin styles & icon set · 15 iPad, planning tomorrow (no GPS).
 
 Navigation: tab bar **Map · Today · Trip · Lists** on iPhone; on iPad a left rail + side list + map + floating card.
 
 ---
 
-## 4. Stack (decision pending — see §9)
+## 4. Stack (recommendation v0.2 — awaiting owner's go-ahead)
 
-| | **A. Google + Firebase** (recommended) | **B. No billing account** |
+**No Google Cloud billing account.** Same approach as the owner's previous city-trip app, plus shared editing:
+
+| Part | Choice | Notes |
 |---|---|---|
-| Base map | Google Maps JS (English labels, light/dark) | MapLibre + OpenStreetMap-based tiles, own light/dark style |
-| Add a place | Search Google places → exact place, coords, address | Paste a Google Maps link · "I'm here" · drop a pin |
-| "Google Maps" button | Opens the exact place page (place ID) | Searches name + address (usually right; check key ones) |
-| Data & sync | Firestore — live across 3 devices, offline cache | Firestore (free plan) |
-| Account needs | Google Cloud project **with billing**; usage expected inside Google's per-SKU free monthly caps; budget alert + quotas set | Firebase free plan only |
+| Base map | Free OpenStreetMap-based map (Leaflet or MapLibre) | Default OSM tiles label Japan mostly in Japanese; test a free style with English names before committing. Pins and cards carry English/romaji regardless. |
+| Google Maps buttons | Google Maps URLs (no key) | Exact place page when a `place_id` or a pasted Google Maps link is stored; otherwise search by name + address. |
+| Adding a place on the phone | Paste a Google Maps share link → confirm the pin ("I'm here" or move the map) | One extra step versus an in-app Google search. Short share links can't be resolved in the browser, so the pin is confirmed by hand. |
+| Shared data | **Firebase, free plan** (Firestore + anonymous auth) | No card. Live sync across the three travellers' devices, local cache for offline. Needed because all three edit; the previous app was read-only. |
+| Hosting | GitHub Pages if the repo stays public; Firebase Hosting (free) if it goes private | Users open a web address; they never need repo access. |
+| Access | Private **trip key**, entered once per device | No sign-in screens; works in home-screen mode. |
 
-Common to both: static PWA (Vite + TypeScript + Preact), service worker for offline, hosted on **Firebase Hosting** (works with a
-private repo) or GitHub Pages (public repo only). Access by a **private trip key** entered once per device — no sign-in screens,
-works in home-screen mode. Booking data lives only in the data store, never in this repo.
+Upgrade path, only if wanted later: a Google Maps API key (needs billing) would add in-app place search and exact place IDs for
+researched places. Not needed for v1.
+
+Booking data lives only in the data store, never in this repo. Front end: static PWA (Vite + TypeScript + Preact), service worker.
 
 ---
 
@@ -214,6 +227,10 @@ Times are stored with offsets and shown in JST; flights show local time at each 
   - Unknown → omit the field. Never infer hours, prices, rules or names.
   - Japanese name and romaji come from sources; romaji in Hepburn.
   - Coordinates must be checked against a map source; `gmaps.place_id` only when actually obtained.
+    Claude Code sessions have **no Google Places lookup**, so researched places normally link by name + address; a wrong link is
+    fixed by pasting the correct Google Maps link into the place.
+  - Each source carries a type tag (as in the previous app): `G` Google Maps listing · `T` Tabelog · `S` official site ·
+    `P` press/guides · `K` Claude's general knowledge (unverified — shown as such).
 - In the app: Research inbox → Keep / Skip (or Keep all). Kept places join the map with the "Researched" label.
 
 ---
@@ -235,15 +252,25 @@ Times are stored with offsets and shown in JST; flights show local time at each 
 
 ---
 
-## 9. Open decisions
+## 9. Decisions
 
-1. Stack A or B (§4).
-2. Who edits — one editor or all three travellers?
-3. Repo visibility — make private? (Then hosting moves to Firebase Hosting; GitHub Pages needs a public repo on the free plan.)
-4. iPad: cellular (has GPS) or Wi-Fi only; used in the car or mainly for planning?
-5. After review: default pin style, theme and layout.
+Settled: one map with areas · glyph pins · all three travellers edit · iPad = Wi-Fi-only night planner.
 
-## 10. Phasing
+Open:
+1. Go-ahead on §4 (free map + Firebase free plan, no billing).
+2. Repo public (GitHub Pages) or private (Firebase Hosting).
+3. Add a **Guide** tab like the previous app's Info tab (getting around, eating, driving, photo rules)?
+4. Extra place types: figurine photo spots, gyms/running, dessert benchmarking, EDC shops?
+5. After testing v1: default pin style, theme and layout.
+
+## 10. Lessons from the previous app (single-file Leaflet app)
+
+Keep: free OSM map · Google Maps URLs with `query_place_id` · source tags on every place · "closed today" badges ·
+category intros · an Info tab.
+Change: colour-only teardrop pins → glyph pins · single fixed base → GPS or per-night base · read-only data → shared editing ·
+dark only → light/dark/auto.
+
+## 11. Phasing
 
 | Step | Scope |
 |---|---|
