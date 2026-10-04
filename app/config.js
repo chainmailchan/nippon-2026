@@ -15,7 +15,7 @@ export const FIREBASE_CONFIG = {
 
 // Google Maps JavaScript API browser key (public by design; restricted to the site's address in Google Cloud).
 // Empty: OpenStreetMap only.
-export const GOOGLE_MAPS_KEY = '';
+export const GOOGLE_MAPS_KEY = 'AIzaSyAvuAR18Za-xZAiracM8kVlUoSGCqcM27o';
 
 export const TZ = 'Asia/Tokyo';
 
