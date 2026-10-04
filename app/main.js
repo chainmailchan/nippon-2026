@@ -5,18 +5,19 @@ import { FIREBASE_CONFIG, GOOGLE_MAPS_KEY, MAP_STYLES } from './config.js';
 import { installActions, installPanelDrag, on, refreshPanels, closePanel, isOpen, toast } from './ui/core.js';
 import { ui, onRender } from './state.js';
 import { TripMap } from './map.js';
-import { renderMapView, renderNear, initialArea, refreshMarkers, endPick } from './ui/mapview.js';
+import { renderMapTop, renderNear, initialArea, refreshMarkers, endPick } from './ui/mapview.js';
 import { installSheet, applySheet } from './ui/sheet.js';
 import { renderToday } from './ui/today.js';
 import { renderTrip } from './ui/trip.js';
 import { renderLists } from './ui/lists.js';
 import { openJoin } from './ui/settings.js';
-import { openPlace } from './ui/card.js';
+import { openPlace, refreshCard } from './ui/card.js';
 import './ui/edit.js';
 import './ui/inbox.js';
 import { loadBatches } from './research.js';
 import { startWatch, onPosition, geocodeMissing } from './geo.js';
 import { focusDay, areaOf, areaByKey, tripDays } from './trip.js';
+import { distKm } from './util.js';
 
 const WIDE = window.matchMedia('(min-width: 900px) and (min-height: 600px)');
 const VIEWS = { today: renderToday, trip: renderTrip, lists: renderLists };
@@ -28,9 +29,12 @@ function scheduleRender() {
   requestAnimationFrame(() => { pending = false; renderNow(); });
 }
 
-function renderNow() {
+// Views and panels update in place (see patch() in ui/core.js), so a redraw never moves what's on screen.
+function renderNow({ markers = true } = {}) {
   maybeSettleStart();
-  renderMapView();
+  renderMapTop();
+  renderNear();
+  if (markers) refreshMarkers();
   if (VIEWS[ui.tab]) VIEWS[ui.tab]();
   refreshPanels();
 }
@@ -59,7 +63,12 @@ function showTab(tab) {
   try { history.replaceState(null, '', '#' + tab); } catch (e) { /* ignore */ }
 }
 
-on('tab', (d) => showTab(d.tab));
+on('tab', (d) => {
+  if (d.tab !== ui.tab) { showTab(d.tab); return; }
+  // Tapping the open tab again goes back to the top, as in other iPhone apps.
+  const s = document.querySelector(`#view-${d.tab} .scroll`);
+  if (s) s.scrollTo({ top: 0, behavior: 'smooth' });
+});
 document.addEventListener('tab', (e) => showTab(e.detail));
 
 // Once real trip data arrives, open on the right day and area (unless the user already moved).
@@ -177,19 +186,31 @@ function boot() {
 
   loadBatches().then(scheduleRender);
 
+  // Phones report the location every few seconds. Only the dot and the distances (near list, place card)
+  // depend on it, so later fixes update just those, and only after a real move.
   let firstFix = true;
+  let measuredAt = null;
   onPosition((pos) => {
     if (!pos) return;
     lastPos = pos;
     if (ui.map) ui.map.setMe(pos);
     if (firstFix) {
       firstFix = false;
+      measuredAt = pos;
       const k = areaOf({ lat: pos.lat, lng: pos.lng });
       if (k && k !== 'other' && !userMoved) { ui.area = k; if (ui.map) ui.map.flyTo([pos.lat, pos.lng], 15); }
+      scheduleRender();
+      return;
     }
-    scheduleRender();
+    if (distKm(measuredAt, pos) < 0.02) return;
+    measuredAt = pos;
+    renderNear();
+    refreshCard();
   });
   startWatch();
+
+  // Countdowns ("in 25 min") and the date move on their own: bring the screen up to date once a minute.
+  setInterval(() => { if (!document.hidden) renderNow({ markers: false }); }, 60000);
 
   setTimeout(() => geocodeMissing().then((n) => { if (n) toast(`Placed ${n} pin${n > 1 ? 's' : ''} from addresses`); }), 4000);
 

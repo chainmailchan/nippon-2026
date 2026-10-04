@@ -4,7 +4,7 @@ import { getPrefs, setPrefs, setFilters, mapStyleKey } from '../prefs.js';
 import { AREAS, AREA_ORDER, CHIPS, MAP_STYLES, MEAL_LABEL, MODES, GOOGLE_MAPS_KEY } from '../config.js';
 import { icon } from '../icons.js';
 import { esc, fmtDay, fmtDayShort, addDays, whenParts, minutesUntil, fmtIn, debounce, hasCoords } from '../util.js';
-import { on, openPanel, closePanel, toast, neutralBadge, grab, closeBtn, seg } from './core.js';
+import { on, openPanel, closePanel, toast, neutralBadge, grab, closeBtn, seg, patch } from './core.js';
 import { ui, rerender } from '../state.js';
 import { visiblePlaces, refPoint, sortByDistance, placeRow } from './places.js';
 import { tripDays, dayArea, focusDay, nextUp, areaOf, areaByKey } from '../trip.js';
@@ -23,7 +23,7 @@ export function renderMapTop() {
   const area = areaByKey(ui.area);
   const pend = pendingCount();
   const advanced = (f.mustOnly ? 1 : 0) + (f.source !== 'all' ? 1 : 0) + (f.meal ? 1 : 0) + (f.hideVisited ? 0 : 1) + (f.showHidden ? 1 : 0);
-  el.innerHTML = `
+  patch(el, `
     <div class="toprow">
       <button type="button" class="pill" data-action="area-picker" aria-label="Change area">
         ${icon(area ? area.glyph : 'globe')}
@@ -43,8 +43,10 @@ export function renderMapTop() {
       <button type="button" class="chip plain${advanced ? ' on' : ''}" data-action="filters">${icon('sliders', 's')}Filters${advanced ? ` · ${advanced}` : ''}</button>
       <button type="button" class="chip plain${f.bookedOnly ? ' on' : ''}" data-action="toggle-booked" aria-pressed="${f.bookedOnly}">${icon('check', 's ok')}Booked</button>
       ${CHIPS.map((c) => `<button type="button" class="chip${f.chips.includes(c.key) ? ' on' : ''}" data-action="chip" data-key="${c.key}" aria-pressed="${f.chips.includes(c.key)}"><span class="badge f-${c.fam}">${icon(c.glyph)}</span>${esc(c.label)}</button>`).join('')}
-    </div>`;
+    </div>`);
 }
+
+let nearShown = null; // what the list is answering: a new search, filter or reference point starts at the top
 
 export function renderNear() {
   const el = document.getElementById('near');
@@ -63,7 +65,7 @@ export function renderNear() {
   const limit = full ? 80 : 6;
   const rows = list.slice(0, limit).map(({ p, d }) => placeRow(p, d)).join('');
   const empty = !list.length ? `<div class="empty small"><b>${q ? 'Nothing matches' : 'No places here yet'}</b><p>${q ? 'Try the English name, romaji or Japanese.' : store.all('places').length ? 'Loosen the filters, or switch area.' : 'Add a place with ＋ or keep some from the research inbox.'}</p></div>` : '';
-  el.innerHTML = `
+  patch(el, `
     <button type="button" class="near-head" data-action="near-toggle" aria-expanded="${full}" aria-label="${full ? 'Show less' : 'Show more'}: ${title}">
       ${grab()}
       <span class="hrow"><span class="vstack"><span class="t-title">${title}</span><span class="t-sec">${sub}</span></span>
@@ -71,7 +73,9 @@ export function renderNear() {
     </button>
     <div class="near-list scroll">${next}${rows}${empty}
       <div class="near-foot"><button type="button" class="btn sec sm" data-action="add-place">${icon('plus', 's')}Add a place</button></div>
-    </div>`;
+    </div>`);
+  const shown = JSON.stringify([q, getPrefs().filters, ui.focus, ref && ref.kind, ref && ref.kind !== 'gps' ? [ref.lat, ref.lng] : null]);
+  if (shown !== nearShown) { nearShown = shown; el.querySelector('.near-list').scrollTop = 0; }
   if (!el.classList.contains('dragging')) applySheet();
 }
 
@@ -97,8 +101,6 @@ export function refreshMarkers() {
   ui.map.setPlaces(visiblePlaces(), { labels: prefs.labels, dense: prefs.density === 'dense' });
   if (ui.selected) ui.map.select(ui.selected, { pan: false });
 }
-
-export function renderMapView() { renderMapTop(); renderNear(); refreshMarkers(); }
 
 // ---------- areas ----------
 export function goToArea(key, { fly = true } = {}) {
@@ -199,7 +201,12 @@ function mapOptions() {
 // ---------- actions ----------
 const search = debounce(() => { renderNear(); refreshMarkers(); }, 160);
 on('search', (d, el) => { ui.query = el.value; if (el.value) ui.sheet = 'full'; search(); });
-on('search-clear', () => { ui.query = ''; renderMapTop(); renderNear(); refreshMarkers(); });
+on('search-clear', () => {
+  ui.query = '';
+  const field = document.getElementById('search');
+  if (field) field.value = ''; // a focused field keeps its text through a redraw, so clear it here
+  renderMapTop(); renderNear(); refreshMarkers();
+});
 on('near-toggle', () => stepSheet());
 on('chip', (d) => {
   const f = getPrefs().filters;
@@ -212,7 +219,7 @@ on('filter-toggle', (d) => { setFilters({ [d.key]: !getPrefs().filters[d.key] })
 on('filter-source', (d) => { setFilters({ source: d.value }); rerender('map'); refreshFiltersPanel(); });
 on('filter-meal', (d) => { setFilters({ meal: getPrefs().filters.meal === d.value ? '' : d.value }); rerender('map'); refreshFiltersPanel(); });
 on('filters-reset', () => { setFilters({ chips: [], bookedOnly: false, mustOnly: false, hideVisited: true, showHidden: false, source: 'all', meal: '' }); rerender('map'); refreshFiltersPanel(); });
-function refreshFiltersPanel() { const p = document.querySelector('[data-panel="filters"] .panel-body'); if (p) p.innerHTML = filtersPanel(); }
+function refreshFiltersPanel() { const p = document.querySelector('[data-panel="filters"] .panel-body'); if (p) patch(p, filtersPanel()); }
 
 on('area-picker', () => openPanel('areas', areaPicker));
 on('go-area', (d) => { closePanel('areas'); goToArea(d.key); });
@@ -255,4 +262,4 @@ export function endPick() {
 on('end-pick', () => endPick());
 on('inbox', () => openInbox());
 
-function refreshPanelBody(id, fn) { const p = document.querySelector(`[data-panel="${id}"] .panel-body`); if (p) p.innerHTML = fn(); }
+function refreshPanelBody(id, fn) { const p = document.querySelector(`[data-panel="${id}"] .panel-body`); if (p) patch(p, fn()); }

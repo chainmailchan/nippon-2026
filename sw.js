@@ -1,6 +1,6 @@
 // Offline support: app files are network-first (always fresh online, cached for offline);
 // map tiles and fonts are cache-first with a size cap. Firestore traffic is never touched.
-const VERSION = 'v0.2.0-2';
+const VERSION = 'v0.2.1';
 const APP_CACHE = 'app-' + VERSION;
 const TILE_CACHE = 'tiles-v1';
 const FONT_CACHE = 'fonts-v1';

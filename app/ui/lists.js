@@ -3,7 +3,7 @@ import { store } from '../store.js';
 import { LISTS, CATEGORIES } from '../config.js';
 import { icon } from '../icons.js';
 import { esc, fmtDay } from '../util.js';
-import { on, emptyState } from './core.js';
+import { on, emptyState, patch } from './core.js';
 import { ui, rerender } from '../state.js';
 import { placeStatus } from '../trip.js';
 import { goToArea } from './mapview.js';
@@ -19,13 +19,13 @@ export function renderLists() {
     return `<div class="ghead" id="list-${l.key}"><span class="t-over">${esc(l.label)}</span><span class="t-cap">${done} of ${its.length}</span></div>
       <div class="group">${its.map(itemRow).join('')}</div>`;
   }).join('');
-  el.innerHTML = `
+  patch(el, `
     <div class="head">
       <div class="vstack"><h1>Lists</h1><span class="sub">Eat · buy · see · bring · admin</span></div>
       <div class="hstack"><button type="button" class="iconbtn flat" data-action="new-item" data-list="eat" aria-label="Add item">${icon('plus')}</button></div>
     </div>
     <div class="pad-x"><div class="seg">${LISTS.map((l) => `<button type="button" data-action="list-jump" data-key="${l.key}">${esc(l.label)}</button>`).join('')}</div></div>
-    <div class="scroll body">${groups || emptyState('No lists yet', 'Add things to eat, buy, see, bring and do.', '<button type="button" class="btn sec sm" data-action="new-item" data-list="eat">Add an item</button>')}</div>`;
+    <div class="scroll body">${groups || emptyState('No lists yet', 'Add things to eat, buy, see, bring and do.', '<button type="button" class="btn sec sm" data-action="new-item" data-list="eat">Add an item</button>')}</div>`);
 }
 
 function linkedPlaces(it) { return (it.place_ids || []).map((id) => store.get('places', id)).filter(Boolean); }

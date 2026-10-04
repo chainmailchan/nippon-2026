@@ -4,7 +4,7 @@ import { getPrefs, setFilters } from '../prefs.js';
 import { MEAL_LABEL } from '../config.js';
 import { icon } from '../icons.js';
 import { esc, fmtDay, addDays, todayJST, daysBetween, fmtClock, hasCoords, minutesUntil, fmtIn, whenParts, wdShort } from '../util.js';
-import { on, badge, neutralBadge, emptyState, tag } from './core.js';
+import { on, badge, neutralBadge, emptyState, tag, patch } from './core.js';
 import { ui, rerender } from '../state.js';
 import { dayTimeline, dayNumber, dayArea, areaByKey, tripDays, tripRange, nightBase, nextUp, mealSlots, placeStatus, clampDay } from '../trip.js';
 import { lightTimes } from '../sun.js';
@@ -98,7 +98,7 @@ export function renderToday() {
   const tmr = days.includes(tomorrow) ? dayTimeline(tomorrow).filter((e) => e.kind !== 'slot' || !e.covered) : [];
   const openMeals = days.includes(tomorrow) ? mealSlots(tomorrow).filter((m) => !m.coveredBy).length : 0;
 
-  el.innerHTML = `
+  patch(el, `
     <div class="head">
       <div class="vstack">
         <span class="t-over">${[label, dn ? `Day ${dn.n} of ${dn.total}` : '', area ? area.name : ''].filter(Boolean).map(esc).join(' · ') || 'Trip'}</span>
@@ -119,19 +119,16 @@ export function renderToday() {
       ${tl.length ? `<div class="ghead"><span class="t-over">${esc(label || fmtDay(day))}</span><span class="t-cap">Times in local time</span></div><div class="group">${tl.map((e) => entryRow(e, day)).join('')}</div>` : (days.length ? '<div class="card t-sec">Nothing fixed — a free day. Open meals and ideas are on the map.</div>' : '')}
       ${tmr.length ? `<div class="ghead"><span class="t-over">${esc(isTomorrow ? 'The day after' : 'Tomorrow')} · ${esc(fmtDay(tomorrow))}</span>${openMeals ? `<span class="t-cap">${openMeals} open meal${openMeals > 1 ? 's' : ''}</span>` : ''}</div>
         <div class="group">${tmr.filter((e) => e.kind !== 'slot').slice(0, 4).map((e) => entryRow(e, tomorrow, { compact: true })).join('') || '<div class="tli"><span class="time na">—</span><span class="t-sec">Nothing fixed</span></div>'}</div>` : ''}
-    </div>`;
-  // Keep the day strip where the traveller scrolled it; centre the chosen day when it changes.
+    </div>`);
+  // Redraws keep both scroll positions; another day starts at the top, with its chip centred in the strip.
   const strip = el.querySelector('.daystrip');
   const chosen = strip && strip.querySelector('.daychip.on');
-  if (strip && chosen) {
-    if (stripState.day === day && stripState.left !== null) strip.scrollLeft = stripState.left;
-    else strip.scrollLeft = chosen.offsetLeft - (strip.clientWidth - chosen.offsetWidth) / 2;
-    stripState.day = day;
-    stripState.left = strip.scrollLeft;
-    strip.addEventListener('scroll', () => { stripState.left = strip.scrollLeft; }, { passive: true });
-  }
+  if (drawn.day !== day) el.querySelector('.scroll.body').scrollTop = 0;
+  if (chosen && (drawn.day !== day || drawn.strip !== strip)) strip.scrollLeft = chosen.offsetLeft - (strip.clientWidth - chosen.offsetWidth) / 2;
+  drawn.day = day;
+  drawn.strip = strip;
 }
-const stripState = { day: null, left: null };
+const drawn = { day: null, strip: null }; // what's on screen
 
 on('day-step', (d) => {
   const days = tripDays();

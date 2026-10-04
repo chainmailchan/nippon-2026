@@ -3,12 +3,13 @@ import { store } from '../store.js';
 import { AREA_ORDER, MEAL_LABEL } from '../config.js';
 import { icon } from '../icons.js';
 import { esc, fmtDay, fmtDayShort, whenParts, download, todayJST } from '../util.js';
-import { on, emptyState } from './core.js';
+import { on, emptyState, patch } from './core.js';
 import { ui, rerender } from '../state.js';
 import { tripDays, dayArea, areaByKey, dayNumber, dayTimeline, mealSlots, activeBookings, tripRange } from '../trip.js';
 import { entryRow } from './today.js';
 
 let filter = 'all';
+let drawn = null; // the filter on screen: a new one starts at the top
 
 export function renderTrip() {
   const el = document.getElementById('view-trip');
@@ -41,7 +42,7 @@ export function renderTrip() {
   if (holds.length) settle.push(`${holds.length} held booking${holds.length > 1 ? 's' : ''} to decide`);
   if (openMeals) settle.push(`${openMeals} open meals`);
 
-  el.innerHTML = `
+  patch(el, `
     <div class="head">
       <div class="vstack"><h1>Trip</h1><span class="sub">${r ? esc(`${fmtDayShort(r.start)} – ${fmtDayShort(r.end)}`) : 'No dates yet'}</span></div>
       <div class="hstack">
@@ -53,7 +54,8 @@ export function renderTrip() {
     <div class="scroll body">
       ${settle.length ? `<div class="banner">${icon('hourglass')}<span><b>To settle:</b> ${settle.join(' · ')}</span></div>` : ''}
       ${days.length ? dayBlocks : emptyState('No bookings yet', 'Bookings you add appear here day by day.', '<button type="button" class="btn sec sm" data-action="new-booking">Add a booking</button>')}
-    </div>`;
+    </div>`);
+  if (drawn !== filter) { drawn = filter; el.querySelector('.scroll.body').scrollTop = 0; }
 }
 
 on('trip-filter', (d) => { filter = d.value; renderTrip(); });

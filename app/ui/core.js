@@ -31,6 +31,45 @@ export function installActions(root) {
   });
 }
 
+// ---------- updating markup in place ----------
+// Screens are redrawn often (data syncing in, location fixes, the minute tick). patch() brings the live
+// DOM in line with new markup node by node and leaves unchanged nodes alone, so scroll positions (even
+// mid-fling), the field being typed in and the keyboard all survive a redraw.
+export function patch(el, html) {
+  const t = document.createElement('template');
+  t.innerHTML = html;
+  morph(el, t.content);
+}
+
+function morph(cur, next) {
+  const a = Array.from(cur.childNodes);
+  const b = Array.from(next.childNodes);
+  b.forEach((n, i) => {
+    const o = a[i];
+    if (!o) cur.appendChild(n);
+    else if (o.nodeName !== n.nodeName) cur.replaceChild(n, o);
+    else if (o.nodeType === 1) syncElement(o, n);
+    else if (o.nodeValue !== n.nodeValue) o.nodeValue = n.nodeValue;
+  });
+  for (let i = b.length; i < a.length; i++) a[i].remove();
+}
+
+const FIELDS = new Set(['INPUT', 'TEXTAREA', 'SELECT']);
+
+function syncElement(o, n) {
+  // Read the new field value first: morphing the children moves nodes out of n.
+  const field = FIELDS.has(o.nodeName) && o !== document.activeElement ? { value: n.value, checked: n.checked } : null;
+  const own = (name) => o.nodeName === 'DETAILS' && name === 'open'; // an opened section stays as the traveller left it
+  for (const { name } of Array.from(o.attributes)) if (!n.hasAttribute(name) && !own(name)) o.removeAttribute(name);
+  for (const { name, value } of Array.from(n.attributes)) if (o.getAttribute(name) !== value && !own(name)) o.setAttribute(name, value);
+  morph(o, n);
+  // A field being typed in keeps what's typed; other fields show the new value.
+  if (field) {
+    if (o.value !== field.value) o.value = field.value;
+    if (o.checked !== field.checked) o.checked = field.checked;
+  }
+}
+
 // ---------- panels ----------
 // kind: 'sheet' (bottom sheet over the map), 'full' (full screen), 'modal' (centred sheet on wide screens)
 const stack = [];
@@ -56,9 +95,9 @@ function paint(entry) {
   const body = entry.wrap.querySelector('.panel-body');
   const scroller = body.querySelector('.scroll');
   const top = scroller ? scroller.scrollTop : 0;
-  body.innerHTML = entry.render();
+  patch(body, entry.render());
   const s2 = body.querySelector('.scroll');
-  if (s2) s2.scrollTop = top;
+  if (s2 && s2 !== scroller) s2.scrollTop = top; // only a rebuilt scroller needs its place back
   if (entry.afterPaint) entry.afterPaint(body);
 }
 

@@ -257,6 +257,9 @@ Times are stored with offsets and shown in JST; flights show local time at each 
 - **Home-screen app:** manifest `display: standalone`, `apple-mobile-web-app-capable`, status bar `black-translucent`,
   `viewport-fit=cover` with safe-area insets. No fake status bar in the UI.
 - **Offline:** service worker caches the app shell and data; Firestore keeps a local cache.
+- **Redraws:** screens and panels update in place (`patch()` in `app/ui/core.js`, never a bare `innerHTML`), so data syncing in,
+  location fixes and the once-a-minute refresh never move a scroll position or close the keyboard. A location fix redraws only
+  the "you are here" dot and distances, and only after a move of 20 m or more.
 - **Light times:** computed on device for the place and date. Golden = sun between −4° and +6°; blue = −6° to −4°. Flat horizon,
   so hills make real sunrise later — the card says so.
 - **Type:** as in the owner's Milano app — Inter for text (400–600), Fraunces for titles, headings and place names; BIZ UDPGothic for Japanese; system fonts as fallback. Section labels in sentence case.
