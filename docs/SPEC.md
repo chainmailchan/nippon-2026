@@ -257,7 +257,7 @@ Times are stored with offsets and shown in JST; flights show local time at each 
 - **Offline:** service worker caches the app shell and data; Firestore keeps a local cache.
 - **Light times:** computed on device for the place and date. Golden = sun between −4° and +6°; blue = −6° to −4°. Flat horizon,
   so hills make real sunrise later — the card says so.
-- **Type:** Atkinson Hyperlegible (Latin) + BIZ UDPGothic (Japanese), both legibility-focused; system fonts as fallback.
+- **Type:** as in the owner's Milano app — Inter for text (400–600), Fraunces for titles, headings and place names; BIZ UDPGothic for Japanese; system fonts as fallback. Section labels in sentence case.
 - **Accessibility:** 44 px minimum targets; 4.5:1 text contrast in both themes.
 
 ---
