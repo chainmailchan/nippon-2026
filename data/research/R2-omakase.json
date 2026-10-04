@@ -3,7 +3,7 @@
   "title": "Omakase sushi — Ginza and around",
   "created": "2026-10-03",
   "brief": "Omakase counters to try, compared with Sushi Suzuki (included first, as the benchmark). Lunch is fine; no tempura. Prices are per person.",
-  "notes": "Availability wasn't checked anywhere. Michelin claims come from press summaries and need checking on guide.michelin.com. Where a 日本語 address is street-only, I transcribed it from the English address. Four places at the end have no address yet; their Google Maps button searches by name and neighbourhood.",
+  "notes": "Left out for price: Sushi Kanesaka (Ginza main shop and Palace Hotel), Harutaka and Sushi Hashimoto — their cheapest courses run ¥36,300–¥66,000. Availability wasn't checked anywhere. Michelin claims come from press summaries and need checking on guide.michelin.com. Where a 日本語 address is street-only, I transcribed it from the English address. Two places have no address yet; their Google Maps button searches by name and neighbourhood.",
   "places": [
     {
       "id": "sushi-suzuki",
@@ -11,8 +11,16 @@
       "ja": "鮨 鈴木",
       "romaji": "Sushi Suzuki",
       "category": "sushi",
-      "tags": ["omakase", "edomae", "akazu", "benchmark"],
-      "meals": ["lunch", "dinner"],
+      "tags": [
+        "omakase",
+        "edomae",
+        "akazu",
+        "benchmark"
+      ],
+      "meals": [
+        "lunch",
+        "dinner"
+      ],
       "area": "tokyo",
       "address_en": "5F Ginza Bijutsukan Bldg, 6-5-6 Ginza, Chuo-ku, Tokyo",
       "address_ja": "東京都中央区銀座6-5-6 銀座美術館ビル 5F",
@@ -37,12 +45,36 @@
           "Is a service charge added? How much is jpneazy's fee?"
         ],
         "sources": [
-          {"type": "T", "url": "https://tabelog.com/en/tokyo/A1301/A130101/13299923/", "title": "鮨 鈴木 — Tabelog"},
-          {"type": "T", "url": "https://tabelog.com/tokyo/A1301/A130101/13299923/dtlrvwlst/", "title": "Reviews, awards — Tabelog"},
-          {"type": "T", "url": "https://tabelog.com/en/tokyo/A1301/A130101/13184367/", "title": "Previous location — Tabelog"},
-          {"type": "P", "url": "https://jpneazy.com/restaurants/10107", "title": "jpneazy booking page (prices before and after 1 Jul 2026)"},
-          {"type": "P", "url": "https://www.thesushigeek.com/2016/12/31/sushi-suzuki-in-ginza-tokyo/", "title": "Sushi Suzuki — The Sushi Geek (2016)"},
-          {"type": "P", "url": "https://savorjapan.com/0006079317", "title": "Sushi Suzuki — Savor Japan"}
+          {
+            "type": "T",
+            "url": "https://tabelog.com/en/tokyo/A1301/A130101/13299923/",
+            "title": "鮨 鈴木 — Tabelog"
+          },
+          {
+            "type": "T",
+            "url": "https://tabelog.com/tokyo/A1301/A130101/13299923/dtlrvwlst/",
+            "title": "Reviews, awards — Tabelog"
+          },
+          {
+            "type": "T",
+            "url": "https://tabelog.com/en/tokyo/A1301/A130101/13184367/",
+            "title": "Previous location — Tabelog"
+          },
+          {
+            "type": "P",
+            "url": "https://jpneazy.com/restaurants/10107",
+            "title": "jpneazy booking page (prices before and after 1 Jul 2026)"
+          },
+          {
+            "type": "P",
+            "url": "https://www.thesushigeek.com/2016/12/31/sushi-suzuki-in-ginza-tokyo/",
+            "title": "Sushi Suzuki — The Sushi Geek (2016)"
+          },
+          {
+            "type": "P",
+            "url": "https://savorjapan.com/0006079317",
+            "title": "Sushi Suzuki — Savor Japan"
+          }
         ]
       },
       "origin": "claude"
@@ -53,8 +85,14 @@
       "ja": "銀座 鮨青木",
       "romaji": "Ginza Sushi Aoki",
       "category": "sushi",
-      "tags": ["omakase", "edomae"],
-      "meals": ["lunch", "dinner"],
+      "tags": [
+        "omakase",
+        "edomae"
+      ],
+      "meals": [
+        "lunch",
+        "dinner"
+      ],
       "area": "tokyo",
       "address_en": "4F Dai-3 Iwatsuki Bldg, 6-7-7 Ginza, Chuo-ku, Tokyo",
       "address_ja": "東京都中央区銀座6-7-7 第3岩月ビル 4F",
@@ -79,12 +117,36 @@
           "Tabelog also lists 050-5871-0533. Which line takes bookings?"
         ],
         "sources": [
-          {"type": "T", "url": "https://tabelog.com/en/tokyo/A1301/A130101/13274702/", "title": "銀座 鮨青木 — Tabelog"},
-          {"type": "P", "url": "https://magazine.tabelog.com/articles/234831", "title": "Relocation report — Tabelog Magazine (2022)"},
-          {"type": "P", "url": "https://hitosara.com/0006026451/person.html", "title": "青木利勝 — Hitosara"},
-          {"type": "P", "url": "https://omakaseje.com/ja/restaurants/al848380", "title": "Hours, seats, closing days — OMAKASE JapanEatinerary"},
-          {"type": "P", "url": "https://trulytokyo.com/ginza-sushi-aoki/", "title": "Ginza Sushi Aoki — Truly Tokyo"},
-          {"type": "P", "url": "https://www.thesushigeek.com/2016/12/31/sushi-suzuki-in-ginza-tokyo/", "title": "Suzuki's 12 years at Sushi Aoki — The Sushi Geek"}
+          {
+            "type": "T",
+            "url": "https://tabelog.com/en/tokyo/A1301/A130101/13274702/",
+            "title": "銀座 鮨青木 — Tabelog"
+          },
+          {
+            "type": "P",
+            "url": "https://magazine.tabelog.com/articles/234831",
+            "title": "Relocation report — Tabelog Magazine (2022)"
+          },
+          {
+            "type": "P",
+            "url": "https://hitosara.com/0006026451/person.html",
+            "title": "青木利勝 — Hitosara"
+          },
+          {
+            "type": "P",
+            "url": "https://omakaseje.com/ja/restaurants/al848380",
+            "title": "Hours, seats, closing days — OMAKASE JapanEatinerary"
+          },
+          {
+            "type": "P",
+            "url": "https://trulytokyo.com/ginza-sushi-aoki/",
+            "title": "Ginza Sushi Aoki — Truly Tokyo"
+          },
+          {
+            "type": "P",
+            "url": "https://www.thesushigeek.com/2016/12/31/sushi-suzuki-in-ginza-tokyo/",
+            "title": "Suzuki's 12 years at Sushi Aoki — The Sushi Geek"
+          }
         ]
       },
       "origin": "claude"
@@ -94,8 +156,16 @@
       "name": "Sushi Shin by Miyakawa",
       "romaji": "Sushi Shin",
       "category": "sushi",
-      "tags": ["omakase", "edomae", "hotel", "nihonbashi"],
-      "meals": ["lunch", "dinner"],
+      "tags": [
+        "omakase",
+        "edomae",
+        "hotel",
+        "nihonbashi"
+      ],
+      "meals": [
+        "lunch",
+        "dinner"
+      ],
       "area": "tokyo",
       "address_en": "38F Mandarin Oriental Tokyo, 2-1-1 Nihonbashi Muromachi, Tokyo",
       "address_ja": "東京都中央区日本橋室町2-1-1",
@@ -119,96 +189,41 @@
           "The Wednesday closing comes from an undated Time Out listing."
         ],
         "sources": [
-          {"type": "S", "url": "https://www.sushishin-tokyo.jp/menu/", "title": "Menu — Sushi Shin (official)"},
-          {"type": "S", "url": "https://www.sushishin-tokyo.jp/about-sushi-shin/", "title": "About — Sushi Shin (official)"},
-          {"type": "S", "url": "https://www.mandarinoriental.com/en/tokyo/nihonbashi/dine/sushi-shin-by-miyakawa", "title": "Sushi Shin by Miyakawa — Mandarin Oriental Tokyo"},
-          {"type": "P", "url": "https://www.timeout.com/tokyo/restaurants/sushi-shin-by-miyakawa", "title": "Sushi Shin by Miyakawa — Time Out Tokyo"},
-          {"type": "P", "url": "https://www.tablecheck.com/zh-CN/shops/sushi-shin-tokyo/reserve", "title": "TableCheck booking page"},
-          {"type": "P", "url": "https://omakaseje.com/restaurants/fz637421", "title": "Sushi Shin by Miyakawa — OMAKASE JapanEatinerary"},
-          {"type": "T", "url": "https://tabelog.com/en/tokyo/A1302/A130202/13058580/", "title": "Mandarin Oriental Tokyo — Tabelog"}
-        ]
-      },
-      "origin": "claude"
-    },
-    {
-      "id": "sushi-kanesaka-ginza",
-      "name": "Sushi Kanesaka (Ginza main shop)",
-      "ja": "鮨かねさか本店",
-      "romaji": "Sushi Kanesaka Honten",
-      "category": "sushi",
-      "tags": ["omakase", "edomae"],
-      "meals": ["lunch", "dinner"],
-      "area": "tokyo",
-      "address_en": "Misuzu Building B1F, 8-10-3 Ginza, Chuo-ku, Tokyo",
-      "address_ja": "東京都中央区銀座8-10-3",
-      "website": "https://www.sushi-kanesaka.co.jp/en",
-      "station": "Shimbashi",
-      "summary": "Basement counter in Ginza 8-chome, the original shop of the Kanesaka group.",
-      "practical": {
-        "hours": "Lunch from 12:00; dinner from 18:00",
-        "closed": "Sunday and Monday (OMAKASE)",
-        "price": "Lunch: nigiri course ¥36,300 or Chef's Tasting ¥72,600. Dinner: Chef's Tasting ¥72,600. Tax and service included",
-        "reservation": "Online — OMAKASE, Pocket Concierge, or TABLEALL (¥8,000 booking fee)",
-        "seats": "8 (OMAKASE)",
-        "rules": "No perfume or strong scents. Children from junior-high age, adult course only. Full refund only if cancelled 3 days ahead (OMAKASE)",
-        "as_of": "2026-09"
-      },
-      "research": {
-        "confidence": "high",
-        "why": "Top-end Ginza counter with a lunch nigiri course; three online booking channels.",
-        "notes": "OMAKASE snapshot: bookings open through 30 Nov 2026; the next round opened 1 Oct 2026, 16:00 JST.",
-        "open_questions": [
-          "Michelin Tokyo 2026: press summaries say two stars. Verify on guide.michelin.com.",
-          "Seat count and the official Japanese name.",
-          "TABLEALL lists ¥83,500, which doesn't match ¥72,600 plus its ¥8,000 fee."
-        ],
-        "sources": [
-          {"type": "P", "url": "https://omakase.in/en/r/qu523011", "title": "Sushi Kanesaka — OMAKASE"},
-          {"type": "P", "url": "https://www.pocket-concierge.jp/en/restaurants/244992", "title": "Ginza Sushi Kanesaka — Pocket Concierge"},
-          {"type": "P", "url": "https://www.tableall.com/restaurant/60", "title": "Sushi Kanesaka — TABLEALL"},
-          {"type": "T", "url": "https://tabelog.com/en/tokyo/A1303/A130302/13005003/", "title": "Ginza Sushi Kanesaka Honten — Tabelog"},
-          {"type": "S", "url": "https://www.sushi-kanesaka.co.jp/en", "title": "Sushi Kanesaka (official)"},
-          {"type": "P", "url": "https://omakaseje.com/ja/restaurants/oe735302", "title": "鮨かねさか本店 — OMAKASE JapanEatinerary"}
-        ]
-      },
-      "origin": "claude"
-    },
-    {
-      "id": "sushi-kanesaka-palace",
-      "name": "Sushi Kanesaka, Palace Hotel Tokyo",
-      "ja": "パレスホテル東京 鮨 かねさか",
-      "romaji": "Sushi Kanesaka",
-      "category": "sushi",
-      "tags": ["omakase", "edomae", "hotel", "english-menu"],
-      "meals": ["lunch", "dinner"],
-      "area": "tokyo",
-      "address_en": "Palace Hotel Tokyo 6F, 1-1-1 Marunouchi, Chiyoda-ku, Tokyo",
-      "address_ja": "東京都千代田区丸の内1-1-1 パレスホテル東京 6F",
-      "phone": "+81 3 3211 5323",
-      "website": "https://en.palacehoteltokyo.com/restaurant/sushi-kanesaka",
-      "station": "Tokyo",
-      "summary": "The Palace Hotel Tokyo branch of Sushi Kanesaka, on the 6th floor, serving only an omakase course.",
-      "practical": {
-        "hours": "Lunch 11:30 (last order 13:30); dinner 17:00–22:00 (last order 21:00)",
-        "price": "Lunch omakase ¥44,275 incl. tax and service (OMAKASE JapanEatinerary; an earlier figure of ¥37,950 also appears). Dinner price not found",
-        "reservation": "Phone +81 3 3211 5323, or prepaid online via OMAKASE JapanEatinerary",
-        "seats": "12, counter (japan-food.guide)",
-        "rules": "Cancellation or no-show: ¥5,500 per person at lunch, ¥11,000 at dinner",
-        "as_of": "2026-10"
-      },
-      "research": {
-        "confidence": "medium",
-        "why": "Hotel counter with English menus and English-speaking staff (japan-food.guide); phone and online booking; lunch service.",
-        "open_questions": [
-          "Current dinner price; confirm the lunch price (older listings show from ¥31,630).",
-          "Regular closing days.",
-          "Seat count (12 per japan-food.guide)."
-        ],
-        "sources": [
-          {"type": "S", "url": "https://en.palacehoteltokyo.com/restaurant/sushi-kanesaka", "title": "Sushi Kanesaka — Palace Hotel Tokyo (official)"},
-          {"type": "P", "url": "https://omakaseje.com/restaurants/oe735302", "title": "Sushi Kanesaka Palace Hotel Tokyo — OMAKASE JapanEatinerary"},
-          {"type": "P", "url": "https://japan-food.guide/articles/experience-the-finest-omakase-sushi-around-tokyo-station", "title": "Omakase around Tokyo Station — japan-food.guide"},
-          {"type": "P", "url": "https://gurunavi.com/ja/gfzv800/rev/rst", "title": "パレスホテル東京 鮨 かねさか — Gurunavi"}
+          {
+            "type": "S",
+            "url": "https://www.sushishin-tokyo.jp/menu/",
+            "title": "Menu — Sushi Shin (official)"
+          },
+          {
+            "type": "S",
+            "url": "https://www.sushishin-tokyo.jp/about-sushi-shin/",
+            "title": "About — Sushi Shin (official)"
+          },
+          {
+            "type": "S",
+            "url": "https://www.mandarinoriental.com/en/tokyo/nihonbashi/dine/sushi-shin-by-miyakawa",
+            "title": "Sushi Shin by Miyakawa — Mandarin Oriental Tokyo"
+          },
+          {
+            "type": "P",
+            "url": "https://www.timeout.com/tokyo/restaurants/sushi-shin-by-miyakawa",
+            "title": "Sushi Shin by Miyakawa — Time Out Tokyo"
+          },
+          {
+            "type": "P",
+            "url": "https://www.tablecheck.com/zh-CN/shops/sushi-shin-tokyo/reserve",
+            "title": "TableCheck booking page"
+          },
+          {
+            "type": "P",
+            "url": "https://omakaseje.com/restaurants/fz637421",
+            "title": "Sushi Shin by Miyakawa — OMAKASE JapanEatinerary"
+          },
+          {
+            "type": "T",
+            "url": "https://tabelog.com/en/tokyo/A1302/A130202/13058580/",
+            "title": "Mandarin Oriental Tokyo — Tabelog"
+          }
         ]
       },
       "origin": "claude"
@@ -218,8 +233,14 @@
       "name": "Hakkoku",
       "romaji": "Hakkoku",
       "category": "sushi",
-      "tags": ["omakase", "edomae"],
-      "meals": ["lunch", "dinner"],
+      "tags": [
+        "omakase",
+        "edomae"
+      ],
+      "meals": [
+        "lunch",
+        "dinner"
+      ],
       "area": "tokyo",
       "address_en": "3F, 6-7-6 Ginza, Chuo-ku, Tokyo",
       "address_ja": "東京都中央区銀座6-7-6",
@@ -239,66 +260,11 @@
           "No seat release was scheduled when checked."
         ],
         "sources": [
-          {"type": "P", "url": "https://omakase.in/en/r/hk067071", "title": "Hakkoku — OMAKASE"}
-        ]
-      },
-      "origin": "claude"
-    },
-    {
-      "id": "sushi-harutaka",
-      "name": "Harutaka",
-      "romaji": "Harutaka",
-      "category": "sushi",
-      "tags": ["omakase", "dinner-only"],
-      "meals": ["dinner"],
-      "area": "tokyo",
-      "near": "Ginza, Tokyo",
-      "summary": "Ginza sushi counter with a dinner-only omakase of sashimi, small dishes and nigiri.",
-      "practical": {
-        "hours": "Dinner 17:00–24:00",
-        "closed": "Sunday and national holidays",
-        "price": "Dinner omakase ¥66,000 (Pocket Concierge); tax and service not stated",
-        "reservation": "Online — Pocket Concierge",
-        "as_of": "2026-10"
-      },
-      "research": {
-        "confidence": "medium",
-        "why": "The higher-end option if dinner works.",
-        "open_questions": [
-          "Michelin Tokyo 2026: press summaries say three stars. Verify on guide.michelin.com.",
-          "Address, nearest station, seats and Japanese name.",
-          "Does ¥66,000 include tax and service?"
-        ],
-        "sources": [
-          {"type": "P", "url": "https://www.pocket-concierge.jp/en/restaurants/244047", "title": "Harutaka — Pocket Concierge"}
-        ]
-      },
-      "origin": "claude"
-    },
-    {
-      "id": "sushi-hashimoto",
-      "name": "Sushi Hashimoto",
-      "romaji": "Sushi Hashimoto",
-      "category": "sushi",
-      "tags": ["omakase"],
-      "area": "tokyo",
-      "near": "Shintomicho, Tokyo",
-      "station": "Shintomicho (OMAKASE)",
-      "summary": "Sushi counter near Shintomicho Station with a Chef's Tasting course.",
-      "practical": {
-        "price": "Chef's Tasting ¥36,300 incl. tax, plus 10% service (about ¥39,930); meal not stated. Price may change with the season (OMAKASE)",
-        "reservation": "OMAKASE: bookings open at 12:00 on the 5th of each month for the next two months; ¥390 per-seat fee",
-        "as_of": "2026-10"
-      },
-      "research": {
-        "confidence": "low",
-        "why": "Close to Ginza. Seats go on sale two months ahead, so a late booking relies on cancellations.",
-        "open_questions": [
-          "Is there lunch? Hours, closed days, address, seats and Japanese name.",
-          "Quality signals (Michelin, Tabelog) not captured."
-        ],
-        "sources": [
-          {"type": "P", "url": "https://omakase.in/en/r/gw622283", "title": "Sushi Hashimoto — OMAKASE"}
+          {
+            "type": "P",
+            "url": "https://omakase.in/en/r/hk067071",
+            "title": "Hakkoku — OMAKASE"
+          }
         ]
       },
       "origin": "claude"
@@ -308,8 +274,12 @@
       "name": "Ginza Sushi Yoshi",
       "romaji": "Ginza Sushi Yoshi",
       "category": "sushi",
-      "tags": ["omakase"],
-      "meals": ["lunch"],
+      "tags": [
+        "omakase"
+      ],
+      "meals": [
+        "lunch"
+      ],
       "area": "tokyo",
       "near": "Ginza, Tokyo",
       "summary": "Ginza counter whose chef trained at Sushi Tokami; the set opens with a fatty tuna-collar hand roll, a Tokami speciality.",
@@ -328,8 +298,16 @@
           "Quality signals (Michelin, Tabelog) not captured."
         ],
         "sources": [
-          {"type": "P", "url": "https://www.pocket-concierge.jp/en/restaurants/245493", "title": "Ginza Sushi Yoshi — Pocket Concierge"},
-          {"type": "P", "url": "https://www.tablecheck.com/ginzasushiyoshi", "title": "Ginza Sushi Yoshi — TableCheck"}
+          {
+            "type": "P",
+            "url": "https://www.pocket-concierge.jp/en/restaurants/245493",
+            "title": "Ginza Sushi Yoshi — Pocket Concierge"
+          },
+          {
+            "type": "P",
+            "url": "https://www.tablecheck.com/ginzasushiyoshi",
+            "title": "Ginza Sushi Yoshi — TableCheck"
+          }
         ]
       },
       "origin": "claude"
@@ -339,8 +317,12 @@
       "name": "Sushiya (Ginza)",
       "romaji": "Sushiya",
       "category": "sushi",
-      "tags": ["omakase"],
-      "meals": ["lunch"],
+      "tags": [
+        "omakase"
+      ],
+      "meals": [
+        "lunch"
+      ],
       "area": "tokyo",
       "near": "Ginza, Tokyo",
       "summary": "Ginza sushi counter with an omakase course and nigiri-only lunch menus.",
@@ -359,7 +341,11 @@
           "Quality signals (Michelin, Tabelog) not captured."
         ],
         "sources": [
-          {"type": "P", "url": "https://www.pocket-concierge.jp/en/restaurants/244534", "title": "Sushiya — Pocket Concierge"}
+          {
+            "type": "P",
+            "url": "https://www.pocket-concierge.jp/en/restaurants/244534",
+            "title": "Sushiya — Pocket Concierge"
+          }
         ]
       },
       "origin": "claude"

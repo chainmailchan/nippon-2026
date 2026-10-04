@@ -3,8 +3,15 @@
 export const APP_VERSION = '0.1.0';
 
 // Firebase web config (not secret — access is controlled by Firestore rules and the trip key).
-// Leave null until the Firebase project exists; the app then runs in "this device only" mode.
-export const FIREBASE_CONFIG = null;
+// Set to null to run in "this device only" mode.
+export const FIREBASE_CONFIG = {
+  apiKey: 'AIzaSyCPKnksE-JhwmMpdWqIrs5tLdY0HXdocJM',
+  authDomain: 'nippon-2026.firebaseapp.com',
+  projectId: 'nippon-2026',
+  storageBucket: 'nippon-2026.firebasestorage.app',
+  messagingSenderId: '26556021013',
+  appId: '1:26556021013:web:01b46135a717f814b3911c',
+};
 
 export const TZ = 'Asia/Tokyo';
 

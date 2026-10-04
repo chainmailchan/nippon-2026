@@ -14,11 +14,15 @@ Without sync set up, "Try on this device only" keeps everything in the browser o
 
 ## Shared sync (Firebase, free plan)
 
-1. Create a Firebase project. Add **Firestore** and enable **Anonymous** sign-in under Authentication.
+1. Create a Firebase project. Add **Firestore** (location `asia-northeast1`) and enable **Anonymous** sign-in under Authentication.
 2. Add a web app and paste its config into `FIREBASE_CONFIG` in `app/config.js` (it isn't secret; the rules guard the data).
 3. Paste `firestore.rules` into Firestore › Rules, replacing `REPLACE_WITH_TRIP_KEY` with your trip key. Don't commit the key.
-4. Add the Pages domain under Authentication › Settings › Authorized domains.
-5. Each traveller opens the app once, types their name and the trip key.
+4. Each traveller opens the app once and types their name and the trip key.
+
+## Updating from a computer
+
+Ask Claude in a Claude Code session to add or change places, bookings or list items. It uses `tools/trip_admin.py`,
+which reads the trip key from the `NIPPON_TRIP_KEY` environment variable. Editing on the phones and iPad is unchanged.
 
 ## Research batches
 

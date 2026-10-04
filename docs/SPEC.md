@@ -104,6 +104,7 @@ Navigation: tab bar **Map · Today · Trip · Lists** on iPhone; on iPad a left 
 | Shared data | **Firebase, free plan** (Firestore + anonymous auth) | No card. Live sync across the three travellers' devices, local cache for offline. Needed because all three edit; the previous app was read-only. |
 | Hosting | GitHub Pages (public repo) | Users open a web address; they never need repo access. |
 | Access | Private **trip key**, entered once per device | No sign-in screens; works in home-screen mode. |
+| Updates from a computer | `tools/trip_admin.py` in a Claude session | Same Firestore data over REST; trip key from the `NIPPON_TRIP_KEY` environment variable. |
 
 Upgrade path, only if wanted later: a Google Maps API key (needs billing) would add in-app place search and exact place IDs for
 researched places. Not needed for v1.
