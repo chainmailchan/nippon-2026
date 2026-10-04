@@ -53,6 +53,6 @@ on('find-item', (d) => {
   const places = linkedPlaces(it);
   ui.focus = places.length ? { ids: places.map((p) => p.id), label: it.title } : { cat: it.find, label: CATEGORIES[it.find] ? CATEGORIES[it.find].label : it.title };
   document.dispatchEvent(new CustomEvent('tab', { detail: 'map' }));
-  ui.nearExpanded = true;
+  ui.sheet = 'full';
   if (places.length && ui.map) { ui.map.fit(places, 15); rerender('map'); } else goToArea('', { fly: true });
 });

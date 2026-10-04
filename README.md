@@ -19,6 +19,16 @@ Without sync set up, "Try on this device only" keeps everything in the browser o
 3. Paste `firestore.rules` into Firestore › Rules, replacing `REPLACE_WITH_TRIP_KEY` with your trip key. Don't commit the key.
 4. Each traveller opens the app once and types their name and the trip key.
 
+## Google Maps (optional)
+
+Without a key the app uses OpenStreetMap. To switch to Google Maps (sharper on iPhones, English labels):
+
+1. In Google Cloud, use a project **other than the Firebase one** (billing on the Firebase project would move it off the free plan),
+   link a billing account, and enable **Maps JavaScript API**. Google gives 10,000 map loads a month free.
+2. Create an API key. Restrict it to websites `https://chainmailchan.github.io/*` and to the Maps JavaScript API only.
+   Optionally cap map loads per day under Quotas and add a budget alert.
+3. Put the key in `GOOGLE_MAPS_KEY` in `app/config.js`. It is visible in the page by design; the restrictions protect it.
+
 ## Updating from a computer
 
 Ask Claude in a Claude Code session to add or change places, bookings or list items. It uses `tools/trip_admin.py`,

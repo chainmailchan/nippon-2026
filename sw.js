@@ -1,6 +1,6 @@
 // Offline support: app files are network-first (always fresh online, cached for offline);
 // map tiles and fonts are cache-first with a size cap. Firestore traffic is never touched.
-const VERSION = 'v0.1.0-1';
+const VERSION = 'v0.2.0-1';
 const APP_CACHE = 'app-' + VERSION;
 const TILE_CACHE = 'tiles-v1';
 const FONT_CACHE = 'fonts-v1';
@@ -9,9 +9,9 @@ const TILE_LIMIT = 2500;
 const SHELL = [
   './', 'index.html', 'manifest.webmanifest',
   'app/styles.css', 'app/main.js', 'app/config.js', 'app/icons.js', 'app/util.js', 'app/sun.js', 'app/prefs.js',
-  'app/store.js', 'app/cloud.js', 'app/trip.js', 'app/research.js', 'app/geo.js', 'app/map.js', 'app/state.js',
+  'app/store.js', 'app/cloud.js', 'app/trip.js', 'app/research.js', 'app/geo.js', 'app/map.js', 'app/gmap.js', 'app/pins.js', 'app/state.js',
   'app/ui/core.js', 'app/ui/places.js', 'app/ui/mapview.js', 'app/ui/card.js', 'app/ui/edit.js', 'app/ui/today.js',
-  'app/ui/trip.js', 'app/ui/lists.js', 'app/ui/inbox.js', 'app/ui/settings.js',
+  'app/ui/trip.js', 'app/ui/lists.js', 'app/ui/inbox.js', 'app/ui/settings.js', 'app/ui/sheet.js',
   'vendor/leaflet/leaflet.js', 'vendor/leaflet/leaflet.css', 'vendor/leaflet/leaflet.markercluster.js', 'vendor/leaflet/MarkerCluster.css',
   'vendor/firebase.js', 'icons/icon-192.png', 'icons/apple-touch-icon.png', 'data/research/index.json',
 ];

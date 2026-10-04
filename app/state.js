@@ -3,7 +3,7 @@ export const ui = {
   tab: 'map',            // map | today | trip | lists
   selected: null,        // selected place id
   cardExpanded: false,
-  nearExpanded: false,
+  sheet: 'peek',         // near-me sheet height: min | peek | full
   query: '',
   day: null,             // day shown in Today (YYYY-MM-DD)
   revealed: new Set(),   // booking ids whose refs are shown

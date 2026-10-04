@@ -35,7 +35,8 @@ export function installActions(root) {
 // kind: 'sheet' (bottom sheet over the map), 'full' (full screen), 'modal' (centred sheet on wide screens)
 const stack = [];
 
-export function openPanel(id, render, { kind = 'sheet', onClose, keepOnRefresh = false } = {}) {
+// expand: { get, set } lets a card be dragged up to expand and down to collapse before it closes.
+export function openPanel(id, render, { kind = 'sheet', onClose, keepOnRefresh = false, expand = null } = {}) {
   closePanel(id, true);
   const root = document.getElementById('overlays');
   const wrap = document.createElement('div');
@@ -43,7 +44,7 @@ export function openPanel(id, render, { kind = 'sheet', onClose, keepOnRefresh =
   wrap.dataset.panel = id;
   wrap.innerHTML = `${kind !== 'card' ? '<div class="scrim" data-action="close-panel" data-id="' + esc(id) + '"></div>' : ''}<div class="panel-body" role="dialog" aria-modal="${kind === 'card' ? 'false' : 'true'}"></div>`;
   root.appendChild(wrap);
-  const entry = { id, render, kind, wrap, onClose, keepOnRefresh };
+  const entry = { id, render, kind, wrap, onClose, keepOnRefresh, expand };
   stack.push(entry);
   paint(entry);
   requestAnimationFrame(() => wrap.classList.add('open'));
@@ -92,6 +93,70 @@ export function closePanel(id, silent = false) {
 export function closeTop() { const t = topPanel(); if (t) closePanel(t.id); }
 
 on('close-panel', (d) => closePanel(d.id || (topPanel() && topPanel().id)));
+
+// ---------- dragging sheets by their handle ----------
+// Sheets: drag the handle or header down to close. Place card: drag up to expand, down to collapse, then close.
+const ZONES = { sheet: '.grab, .sheet-head', card: '.grab, .card-toggle, .nameblock' };
+let pdrag = null;
+let quietUntil = 0;
+
+export function installPanelDrag(root) {
+  root.addEventListener('pointerdown', (e) => {
+    if ((e.button !== undefined && e.button > 0) || document.documentElement.classList.contains('wide')) return;
+    const wrap = e.target.closest('.panel');
+    const entry = wrap && stack.find((s) => s.wrap === wrap);
+    if (!entry || !ZONES[entry.kind] || !e.target.closest(ZONES[entry.kind])) return;
+    const body = wrap.querySelector('.panel-body');
+    pdrag = { entry, wrap, body, id: e.pointerId, y0: e.clientY, h0: body.getBoundingClientRect().height, moved: false, pts: [{ y: e.clientY, t: e.timeStamp }] };
+    // Followed on window: a mouse or trackpad pointer can leave the sheet mid-drag.
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', end);
+    window.addEventListener('pointercancel', end);
+  });
+  const move = (e) => {
+    const d = pdrag;
+    if (!d || e.pointerId !== d.id) return;
+    const dy = e.clientY - d.y0; // down is positive
+    if (!d.moved) {
+      if (Math.abs(dy) < 6) return;
+      d.moved = true;
+      d.wrap.classList.add('dragging');
+    }
+    d.pts.push({ y: e.clientY, t: e.timeStamp });
+    if (d.pts.length > 5) d.pts.shift();
+    const exp = d.entry.expand;
+    if (dy < 0 && exp && !exp.get()) {
+      d.body.style.transform = '';
+      d.body.style.height = Math.min(d.h0 - dy, window.innerHeight - 40) + 'px';
+    } else {
+      d.body.style.height = '';
+      d.body.style.transform = `translateY(${dy > 0 ? dy : dy / 4}px)`;
+    }
+  };
+  const end = (e) => {
+    const d = pdrag;
+    if (!d || e.pointerId !== d.id) return;
+    pdrag = null;
+    window.removeEventListener('pointermove', move);
+    window.removeEventListener('pointerup', end);
+    window.removeEventListener('pointercancel', end);
+    if (!d.moved) return;
+    quietUntil = Date.now() + 400;
+    const a = d.pts[0], b = d.pts[d.pts.length - 1];
+    const v = (b.y - a.y) / Math.max(1, b.t - a.t); // px per ms, down is positive
+    const dy = b.y - d.y0;
+    const exp = d.entry.expand;
+    d.wrap.classList.remove('dragging');
+    requestAnimationFrame(() => {
+      d.body.style.transform = '';
+      d.body.style.height = '';
+      if (dy > 90 || v > 0.5) { if (exp && exp.get()) exp.set(false); else closePanel(d.entry.id); }
+      else if (exp && !exp.get() && (dy < -60 || v < -0.5)) exp.set(true);
+    });
+  };
+  // The tap that ends a drag shouldn't also press a button.
+  root.addEventListener('click', (e) => { if (Date.now() < quietUntil) { e.stopPropagation(); e.preventDefault(); } }, true);
+}
 
 // ---------- toast ----------
 let toastT;

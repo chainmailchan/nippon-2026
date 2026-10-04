@@ -98,7 +98,7 @@ Navigation: tab bar **Map · Today · Trip · Lists** on iPhone; on iPad a left 
 
 | Part | Choice | Notes |
 |---|---|---|
-| Base map | Leaflet 1.9 + markercluster, OpenStreetMap tiles | Standard OSM labels Japan mostly in Japanese; a second style (openstreetmap.de) writes names in Latin script. Pins and cards carry English/romaji regardless. |
+| Base map | **Google Maps** (Maps JavaScript API) when `GOOGLE_MAPS_KEY` is set; otherwise Leaflet 1.9 + markercluster on OpenStreetMap | Google: sharp on high-DPI screens, English labels (`language=en`), dark mode via `colorScheme`; needs a browser key with billing (10,000 map loads a month free). OSM raster tiles look soft on iPhones but are cached for offline use; the app falls back to OSM when Google can't load or the key is refused. Pins are the app's own HTML on both, so they look the same. |
 | Google Maps buttons | Google Maps URLs (no key) | Exact place page when a `place_id` or a pasted Google Maps link is stored; otherwise search by name + address. |
 | Adding a place on the phone | Paste a Google Maps share link → confirm the pin ("I'm here" or move the map) | One extra step versus an in-app Google search. Short share links can't be resolved in the browser, so the pin is confirmed by hand. |
 | Shared data | **Firebase, free plan** (Firestore + anonymous auth) | No card. Live sync across the three travellers' devices, local cache for offline. Needed because all three edit; the previous app was read-only. |
@@ -265,8 +265,9 @@ Times are stored with offsets and shown in JST; flights show local time at each 
 ## 9. Decisions
 
 Settled: one map with areas · glyph pins · all three travellers edit · iPad = Wi-Fi-only night planner ·
-free OSM map + Firebase free plan, no billing (Google Cloud billing only if the map styles disappoint) · public repo on
-GitHub Pages · no Info/Guide tab · no figurine photo spots or dessert benchmarking.
+Firebase free plan · public repo on GitHub Pages · no Info/Guide tab · no figurine photo spots or dessert benchmarking ·
+Google Maps base map (owner's Google Cloud project with billing, separate from Firebase), OpenStreetMap as fallback ·
+bottom sheets drag between three heights; page zoom is blocked outside the maps.
 
 Open:
 1. After testing v1: area shortcuts, research inbox, default pin style, theme, layout and map style.

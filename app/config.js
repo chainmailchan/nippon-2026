@@ -1,6 +1,6 @@
 // App-wide constants. Nothing private belongs in this file: the repo is public.
 
-export const APP_VERSION = '0.1.0';
+export const APP_VERSION = '0.2.0';
 
 // Firebase web config (not secret — access is controlled by Firestore rules and the trip key).
 // Set to null to run in "this device only" mode.
@@ -12,6 +12,10 @@ export const FIREBASE_CONFIG = {
   messagingSenderId: '26556021013',
   appId: '1:26556021013:web:01b46135a717f814b3911c',
 };
+
+// Google Maps JavaScript API browser key (public by design; restricted to the site's address in Google Cloud).
+// Empty: OpenStreetMap only.
+export const GOOGLE_MAPS_KEY = '';
 
 export const TZ = 'Asia/Tokyo';
 
@@ -95,16 +99,23 @@ export const CHIPS = [
 ];
 
 export const MAP_STYLES = {
+  google: {
+    label: 'Google Maps',
+    note: 'Sharp at any zoom, English labels. Needs a connection; without one the app shows OpenStreetMap.',
+    provider: 'google',
+  },
   osm: {
     label: 'OpenStreetMap',
-    note: 'Standard map. Labels in Japan are mostly in Japanese.',
+    note: 'Standard map. Labels in Japan are mostly in Japanese. Works offline for areas already viewed.',
+    provider: 'leaflet',
     url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
     attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     maxZoom: 19,
   },
   osmde: {
     label: 'OpenStreetMap, Latin names',
-    note: 'German community style that writes non-Latin names in Latin script. Worth comparing.',
+    note: 'German community style that writes non-Latin names in Latin script.',
+    provider: 'leaflet',
     url: 'https://tile.openstreetmap.de/{z}/{x}/{y}.png',
     attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors · tiles openstreetmap.de',
     maxZoom: 18,

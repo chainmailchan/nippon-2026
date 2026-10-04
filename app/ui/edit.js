@@ -1,12 +1,12 @@
 // Editors: place, booking, list item.
 import { store } from '../store.js';
-import { getPrefs, effectiveTheme } from '../prefs.js';
+import { effectiveTheme, mapStyleKey } from '../prefs.js';
 import { CATEGORIES, LISTS, MEAL_LABEL } from '../config.js';
 import { icon } from '../icons.js';
 import { esc, uid, slugify, coordsFromMapsUrl, hasCoords, whenParts } from '../util.js';
 import { on, openPanel, closePanel, setAfterPaint, toast, badge, seg } from './core.js';
 import { ui, rerender } from '../state.js';
-import { pickerMap } from '../map.js';
+import { leafletPicker } from '../map.js';
 import { geocode, locateOnce, position } from '../geo.js';
 
 // ======================= place =======================
@@ -71,19 +71,24 @@ function placeForm() {
   </div>`;
 }
 
-function mountPicker(body) {
+// The pin picker uses the same map engine as the main map.
+async function mountPicker(body) {
   const el = body.querySelector('#picker');
-  if (!el || !window.L) return;
+  if (!el) return;
   if (picker) { picker.remove(); picker = null; }
   const start = draft._lat !== null ? { lat: draft._lat, lng: draft._lng } : null;
-  picker = pickerMap(el, start, effectiveTheme() === 'dark', getPrefs().mapStyle);
-  picker.on('moveend', () => {
-    const c = picker.getCenter();
+  const dark = effectiveTheme() === 'dark';
+  let p = null;
+  if (ui.map && ui.map.provider === 'google') p = (await import('../gmap.js')).googlePicker(el, start, dark);
+  else if (window.L) p = leafletPicker(el, start, dark, mapStyleKey());
+  if (!p || !el.isConnected) { if (p) p.remove(); return; }
+  picker = p;
+  picker.onMove(() => {
+    const c = picker.center();
     draft._lat = c.lat; draft._lng = c.lng;
-    if (picker._userMoved) { draft._coordSet = true; draft._src = 'pin'; setCoordLine('Pin set — drag the map to adjust'); }
+    if (picker.userMoved) { draft._coordSet = true; draft._src = 'pin'; setCoordLine('Pin set — drag the map to adjust'); }
   });
-  picker.on('dragstart zoomstart', () => { picker._userMoved = true; });
-  setTimeout(() => picker && picker.invalidateSize(), 260);
+  setTimeout(() => picker && picker.invalidate(), 260);
 }
 
 function setCoordLine(t) { const el = document.getElementById('coordline'); if (el) el.textContent = t; }
@@ -94,7 +99,7 @@ function syncInputs() {
   for (const k of ['hours', 'closed', 'price', 'reservation']) draft.practical[k] = val(k);
   for (const k of ['shot', 'best_time', 'access', 'rules', 'video', 'gear']) draft.photo[k] = val(k);
 }
-function moveTo(lat, lng, src, zoom = 17) { draft._lat = lat; draft._lng = lng; draft._coordSet = true; draft._src = src; if (picker) { picker._userMoved = false; picker.setView([lat, lng], zoom); } }
+function moveTo(lat, lng, src, zoom = 17) { draft._lat = lat; draft._lng = lng; draft._coordSet = true; draft._src = src; if (picker) picker.setView(lat, lng, zoom); }
 
 on('draft-cat', (d, el) => { syncInputs(); draft.category = d.value; document.querySelectorAll('[data-action="draft-cat"]').forEach((b) => b.classList.toggle('on', b === el)); });
 on('draft-meal', (d, el) => { const m = draft.meals || []; draft.meals = m.includes(d.value) ? m.filter((x) => x !== d.value) : [...m, d.value]; el.classList.toggle('on'); });

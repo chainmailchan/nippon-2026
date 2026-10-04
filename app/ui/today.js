@@ -131,6 +131,6 @@ on('find-meal', (d) => {
   setFilters({ chips: ['meal'], meal: d.meal });
   const k = dayArea(d.day);
   document.dispatchEvent(new CustomEvent('tab', { detail: 'map' }));
-  ui.nearExpanded = true;
+  ui.sheet = 'full';
   goToArea(k || ui.area);
 });

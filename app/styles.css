@@ -38,6 +38,7 @@
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 16px; line-height: 1.4; -webkit-font-smoothing: antialiased; overscroll-behavior: none; }
+html { touch-action: manipulation; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* no double-tap page zoom */
 body { overflow: hidden; position: fixed; inset: 0; }
 button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
@@ -96,14 +97,22 @@ main { position: relative; flex: 1; min-height: 0; }
 .navbar > :last-child { justify-self: end; }
 
 /* ---------- map ---------- */
+#view-map { background: var(--bg); }
 #map { position: absolute; inset: 0; z-index: 0; background: #E9EBE6; } /* z-index contains Leaflet's own stacking */
+/* Google Maps stops at the sheet so its logo and terms stay visible. */
+#map.gmap { bottom: var(--sheet-h, 300px); background: #F1F3F4; transition: bottom .22s ease; }
+:root[data-theme="dark"] #map.gmap { background: #1D2024; }
+:root.wide #map.gmap { bottom: 0; }
+.gpins { position: absolute; left: 0; top: 0; }
+.gpins > div { position: absolute; cursor: pointer; }
 :root[data-theme="dark"] #map { background: #15171A; }
 .leaflet-container { font: inherit; }
 .tiles-dark { filter: invert(1) hue-rotate(190deg) brightness(.82) contrast(.92) saturate(.55) sepia(.18); }
 .leaflet-control-attribution { font-size: 10px !important; background: rgba(255, 255, 255, .75) !important; }
 :root[data-theme="dark"] .leaflet-control-attribution { background: rgba(14, 15, 17, .75) !important; color: var(--muted) !important; }
 :root[data-theme="dark"] .leaflet-control-attribution a { color: var(--ink2) !important; }
-.leaflet-bottom.leaflet-left { bottom: 300px; } /* above the near-me sheet */
+.leaflet-bottom.leaflet-left { bottom: var(--sheet-h, 300px); transition: bottom .22s ease; } /* above the near-me sheet */
+#view-map.sheet-drag .leaflet-bottom, #view-map.sheet-drag #map.gmap, #view-map.sheet-drag .fabs { transition: none; }
 :root.wide .leaflet-bottom.leaflet-left { bottom: 0; }
 
 .top { position: absolute; left: 12px; right: 12px; top: calc(var(--safe-top) + 10px); display: flex; flex-direction: column; gap: 10px; z-index: 6; pointer-events: none; }
@@ -136,14 +145,15 @@ main { position: relative; flex: 1; min-height: 0; }
 :root[data-density="dense"] .chip .badge .ic { width: 13px; height: 13px; }
 .chip.focus .ic { margin-left: 2px; }
 
-.fabs { position: absolute; right: 12px; bottom: calc(var(--near-peek, 300px) + 12px); display: flex; flex-direction: column; gap: 10px; z-index: 5; }
+.fabs { position: absolute; right: 12px; bottom: calc(var(--sheet-h, 300px) + 22px); display: flex; flex-direction: column; gap: 10px; z-index: 5; transition: bottom .22s ease; }
 .fab { width: 48px; height: 48px; border-radius: 24px; border: 0; background: var(--surface); color: var(--ink); display: grid; place-items: center; box-shadow: var(--shadow); }
 
 /* near-me sheet */
 .near { --near-peek: 300px; position: absolute; left: 0; right: 0; bottom: 0; height: var(--near-peek); background: var(--surface); border-radius: 20px 20px 0 0; box-shadow: 0 -6px 24px rgba(0, 0, 0, .14); z-index: 7; display: flex; flex-direction: column; transition: height .22s ease; }
 :root[data-theme="dark"] .near { box-shadow: 0 -1px 0 var(--line), 0 -10px 30px rgba(0, 0, 0, .6); }
 .near.expanded { height: calc(100% - var(--safe-top) - 124px); } /* stops below search and chips, so filters stay usable */
-.near-head { border: 0; background: transparent; text-align: left; padding: 0 var(--pad) 8px; flex: none; color: inherit; }
+.near-head { border: 0; background: transparent; text-align: left; padding: 0 var(--pad) 8px; flex: none; color: inherit; touch-action: none; }
+.near.dragging { transition: none; }
 .near-head .hrow { margin-top: 4px; }
 .near-list { flex: 1; min-height: 0; border-top: 1px solid var(--line); }
 .near-foot { padding: 14px var(--pad) 20px; display: flex; justify-content: center; }
@@ -308,7 +318,11 @@ main { position: relative; flex: 1; min-height: 0; }
 :root[data-theme="dark"] .panel-card .panel-body { box-shadow: 0 -1px 0 var(--line), 0 -10px 30px rgba(0, 0, 0, .6); }
 .panel-card.open .panel-body { transform: none; }
 .panel-card.expanded .panel-body { height: calc(100% - var(--tabs-h) - var(--safe-top) - 16px); }
-.card-toggle { position: absolute; left: 50%; top: 0; width: 120px; height: 22px; margin-left: -60px; border: 0; background: transparent; }
+.card-toggle { position: absolute; left: 50%; top: 0; width: 160px; height: 26px; margin-left: -80px; border: 0; background: transparent; }
+/* Handles: drag sheets down to close; drag the place card up or down. */
+.panel-sheet .grab, .panel-sheet .sheet-head, .panel-card .grab, .panel-card .card-toggle, .panel-card .nameblock { touch-action: none; }
+.panel.dragging .panel-body { transition: none !important; }
+:root.wide .panel .grab { display: none; }
 .sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px var(--pad) 10px; flex: none; }
 @media (prefers-reduced-motion: reduce) { .panel-body, .panel .scrim, .near { transition: none !important; } }
 

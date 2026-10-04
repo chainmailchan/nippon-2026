@@ -1,7 +1,8 @@
 // Settings and first-run (join) screens.
 import { store } from '../store.js';
 import { getPrefs, setPrefs, effectiveTheme } from '../prefs.js';
-import { APP_VERSION, FIREBASE_CONFIG, MAP_STYLES, MODES, AREA_ORDER } from '../config.js';
+import { mapStyleRows } from './mapview.js';
+import { APP_VERSION, FIREBASE_CONFIG, MODES, AREA_ORDER } from '../config.js';
 import { icon } from '../icons.js';
 import { esc, download } from '../util.js';
 import { on, openPanel, closePanel, refreshPanel, toast, seg } from './core.js';
@@ -29,8 +30,7 @@ function settingsHtml() {
     </div>
 
     <div class="ghead"><span class="t-over">Map</span></div>
-    <div class="group">${Object.entries(MAP_STYLES).map(([k, s]) => `<button type="button" class="row choice${p.mapStyle === k ? ' current' : ''}" data-action="set-pref" data-key="mapStyle" data-value="${k}">
-      <span class="main"><span class="name">${esc(s.label)}</span><span class="meta wrap">${esc(s.note)}</span></span>${p.mapStyle === k ? icon('check', 's ok') : ''}</button>`).join('')}</div>
+    <div class="group">${mapStyleRows()}</div>
 
     <div class="ghead"><span class="t-over">Google Maps buttons</span></div>
     <div class="group">
@@ -93,7 +93,7 @@ export function openJoin() { openPanel('join', joinHtml, { kind: 'full', keepOnR
 on('settings', () => openSettings());
 on('set-pref', (d) => {
   setPrefs({ [d.key]: d.value });
-  if (d.key === 'mapStyle' || d.key === 'theme') document.dispatchEvent(new Event('mapstyle'));
+  if (d.key === 'theme') document.dispatchEvent(new Event('mapstyle'));
   refreshPanel('settings'); rerender('*');
 });
 on('set-mode-area', (d) => { setPrefs({ modes: { ...getPrefs().modes, [d.area]: d.value } }); refreshPanel('settings'); });

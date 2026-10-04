@@ -1,11 +1,14 @@
 // Per-device preferences (never synced).
+import { GOOGLE_MAPS_KEY, MAP_STYLES } from './config.js';
+
 const KEY = 'nippon:prefs:v1';
 
 const DEFAULTS = {
   theme: 'auto',          // auto | light | dark
   density: 'clean',       // clean | dense
   pins: 'signage',        // signage | outline | mono
-  mapStyle: 'osm',        // see MAP_STYLES
+  mapStyle: 'osm',        // see MAP_STYLES; only used once mapStyleSet is true
+  mapStyleSet: false,     // the traveller picked a map style (otherwise Google when available)
   linkMode: 'web',        // web | app (Google Maps app URL scheme)
   labels: 'key',          // key (booked & must-do) | all | off
   name: '',               // traveller name on this device
@@ -30,6 +33,13 @@ function load() {
 }
 
 export function getPrefs() { return prefs; }
+
+// The map style in use: the traveller's choice, else Google Maps when a key is configured.
+export function mapStyleKey() {
+  let k = prefs.mapStyleSet ? prefs.mapStyle : (GOOGLE_MAPS_KEY ? 'google' : 'osm');
+  if (!MAP_STYLES[k] || (k === 'google' && !GOOGLE_MAPS_KEY)) k = 'osm';
+  return k;
+}
 
 export function setPrefs(patch) {
   prefs = { ...prefs, ...patch };

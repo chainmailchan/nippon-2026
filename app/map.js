@@ -1,13 +1,15 @@
-// Leaflet map (vendored, global L) with glyph pins and clustering.
+// Leaflet map (vendored, global L) with glyph pins and clustering: OpenStreetMap styles.
+// gmap.js provides the same interface on Google Maps; main.js picks one.
 import { MAP_STYLES } from './config.js';
-import { icon } from './icons.js';
-import { esc, hasCoords } from './util.js';
-import { placeStatus, catOf } from './trip.js';
+import { hasCoords } from './util.js';
+import { pinHtml, pinSize } from './pins.js';
 
 export class TripMap {
   constructor(el, opts = {}) {
     const L = window.L;
     this.L = L;
+    this.el = el;
+    this.provider = 'leaflet';
     this.opts = opts;
     this.markers = new Map();
     this.selected = null;
@@ -29,21 +31,15 @@ export class TripMap {
   }
 
   setStyle(key, dark) {
-    const st = MAP_STYLES[key] || MAP_STYLES.osm;
+    const st = MAP_STYLES[key] && MAP_STYLES[key].url ? MAP_STYLES[key] : MAP_STYLES.osm;
     if (this.tiles) this.map.removeLayer(this.tiles);
     this.tiles = this.L.tileLayer(st.url, { maxZoom: 19, maxNativeZoom: st.maxZoom, attribution: st.attribution, className: dark ? 'tiles-dark' : 'tiles-light' });
     this.tiles.addTo(this.map);
   }
 
   iconFor(p, sel = false) {
-    const cat = catOf(p);
-    const st = placeStatus(p);
-    const size = this.ctx.dense ? 28 : 34;
-    const cls = ['pin', 'f-' + cat.fam, st.booked ? 'booked' : '', st.hold ? 'hold' : '', st.visited ? 'done' : '', sel ? 'sel' : ''].filter(Boolean).join(' ');
-    const badge = st.booked ? `<span class="bdg ok">${icon('check')}</span>` : (st.must ? `<span class="bdg must">${icon('star')}</span>` : '');
-    const showLabel = sel || this.ctx.labels === 'all' || (this.ctx.labels === 'key' && (st.booked || st.must || st.hold));
-    const label = showLabel ? `<span class="plabel">${esc(p.name)}</span>` : '';
-    return this.L.divIcon({ className: 'pinwrap', html: `<div class="${cls}">${icon(cat.glyph)}${badge}</div>${label}`, iconSize: [size, size], iconAnchor: [size / 2, size / 2] });
+    const size = pinSize(this.ctx);
+    return this.L.divIcon({ className: 'pinwrap', html: pinHtml(p, sel, this.ctx).html, iconSize: [size, size], iconAnchor: [size / 2, size / 2] });
   }
 
   setPlaces(places, ctx) {
@@ -53,12 +49,11 @@ export class TripMap {
     const layers = [];
     for (const p of places) {
       if (!hasCoords(p)) continue;
-      const st = placeStatus(p);
       const m = this.L.marker([p.lat, p.lng], {
         icon: this.iconFor(p, p.id === this.selected),
         keyboard: false,
         title: p.name,
-        zIndexOffset: st.booked ? 500 : (st.must ? 300 : 0),
+        zIndexOffset: pinHtml(p, false, this.ctx).z,
       });
       m.on('click', (e) => { if (e.originalEvent) this.L.DomEvent.stopPropagation(e.originalEvent); this.opts.onSelect && this.opts.onSelect(p.id); });
       m._place = p;
@@ -71,7 +66,7 @@ export class TripMap {
   select(id, { pan = true } = {}) {
     const prev = this.selected && this.markers.get(this.selected);
     this.selected = id;
-    if (prev) { prev.setIcon(this.iconFor(prev._place, false)); prev.setZIndexOffset(0); }
+    if (prev) { prev.setIcon(this.iconFor(prev._place, false)); prev.setZIndexOffset(pinHtml(prev._place, false, this.ctx).z); }
     const m = id && this.markers.get(id);
     if (!m) return;
     m.setIcon(this.iconFor(m._place, true));
@@ -99,6 +94,8 @@ export class TripMap {
 
   flyTo(center, zoom) { this._whenSized(() => this.map.flyTo(center, zoom, { duration: 0.6 })); }
 
+  setView(center, zoom) { this.map.setView(center, zoom); }
+
   fit(points, maxZoom = 15) {
     const pts = points.filter((p) => hasCoords(p)).map((p) => [p.lat, p.lng]);
     if (!pts.length) return;
@@ -117,21 +114,35 @@ export class TripMap {
     } else this.me.setLatLng(ll);
   }
 
+  onDragStart(fn) { this.map.on('dragstart', fn); }
   center() { const c = this.map.getCenter(); return { lat: c.lat, lng: c.lng }; }
-  bounds() { return this.map.getBounds(); }
+  zoom() { return this.map.getZoom(); }
   invalidate() {
     this.map.invalidateSize();
     const s = this.map.getSize();
     if (this._pending && s.x && s.y) { const fn = this._pending; this._pending = null; fn(); }
   }
+  destroy() { this.map.remove(); }
 }
 
 // A small map used to place or move a pin (edit form): the pin sits under a fixed crosshair.
-export function pickerMap(el, start, dark, styleKey) {
+// Same interface as googlePicker() in gmap.js.
+export function leafletPicker(el, start, dark, styleKey) {
   const L = window.L;
-  const st = MAP_STYLES[styleKey] || MAP_STYLES.osm;
+  const st = MAP_STYLES[styleKey] && MAP_STYLES[styleKey].url ? MAP_STYLES[styleKey] : MAP_STYLES.osm;
   const m = L.map(el, { zoomControl: false, attributionControl: false, minZoom: 5, maxZoom: 19 });
   L.tileLayer(st.url, { maxZoom: 19, maxNativeZoom: st.maxZoom, className: dark ? 'tiles-dark' : 'tiles-light' }).addTo(m);
   m.setView(start ? [start.lat, start.lng] : [35.679, 139.769], start ? 17 : 12);
-  return m;
+  const picker = {
+    userMoved: false,
+    prog: false, // a move we started ourselves, not the user
+    onMove(fn) { m.on('moveend', () => { fn(); picker.prog = false; }); },
+    center() { const c = m.getCenter(); return { lat: c.lat, lng: c.lng }; },
+    setView(lat, lng, zoom) { picker.prog = true; picker.userMoved = false; m.setView([lat, lng], zoom); },
+    invalidate() { m.invalidateSize(); },
+    remove() { m.remove(); },
+  };
+  m.on('dragstart', () => { picker.userMoved = true; });
+  m.on('zoomstart', () => { if (!picker.prog) picker.userMoved = true; });
+  return picker;
 }

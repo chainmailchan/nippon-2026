@@ -17,7 +17,11 @@ export function openPlace(id) {
   ui.selected = id;
   ui.cardExpanded = false;
   if (ui.map) ui.map.select(id);
-  openPanel('card', () => cardHtml(ui.selected), { kind: 'card', onClose: () => { ui.selected = null; if (ui.map) ui.map.select(null); } });
+  openPanel('card', () => cardHtml(ui.selected), {
+    kind: 'card',
+    onClose: () => { ui.selected = null; if (ui.map) ui.map.select(null); },
+    expand: { get: () => ui.cardExpanded, set: (v) => { ui.cardExpanded = v; setCardSize(); } },
+  });
   setCardSize();
 }
 

@@ -1,11 +1,12 @@
-// Boot, tabs and rendering.
-import { applyLook, getPrefs, effectiveTheme } from './prefs.js';
+// Boot, tabs, rendering and the map engine (Google Maps or Leaflet/OpenStreetMap).
+import { applyLook, getPrefs, effectiveTheme, mapStyleKey } from './prefs.js';
 import { store } from './store.js';
-import { FIREBASE_CONFIG } from './config.js';
-import { installActions, on, refreshPanels, closePanel, isOpen, toast } from './ui/core.js';
+import { FIREBASE_CONFIG, GOOGLE_MAPS_KEY, MAP_STYLES } from './config.js';
+import { installActions, installPanelDrag, on, refreshPanels, closePanel, isOpen, toast } from './ui/core.js';
 import { ui, onRender } from './state.js';
 import { TripMap } from './map.js';
-import { renderMapView, renderNear, initialArea } from './ui/mapview.js';
+import { renderMapView, renderNear, initialArea, refreshMarkers } from './ui/mapview.js';
+import { installSheet, applySheet } from './ui/sheet.js';
 import { renderToday } from './ui/today.js';
 import { renderTrip } from './ui/trip.js';
 import { renderLists } from './ui/lists.js';
@@ -37,6 +38,7 @@ function renderNow() {
 function setWide() {
   ui.wide = WIDE.matches;
   document.documentElement.classList.toggle('wide', ui.wide);
+  applySheet();
   if (ui.map) setTimeout(() => ui.map.invalidate(), 60);
 }
 
@@ -51,6 +53,7 @@ function showTab(tab) {
   });
   if (tab !== 'map' && !ui.wide) closePanel('card');
   renderNow();
+  applySheet();
   if (ui.map) setTimeout(() => ui.map.invalidate(), 40);
   try { history.replaceState(null, '', '#' + tab); } catch (e) { /* ignore */ }
 }
@@ -68,23 +71,90 @@ function maybeSettleStart() {
   if (!userMoved) {
     ui.area = initialArea();
     const a = areaByKey(ui.area);
-    if (a && ui.map) ui.map.map.setView(a.center, a.zoom);
+    if (a && ui.map) ui.map.setView(a.center, a.zoom);
   }
+}
+
+// ---------- map engine ----------
+const mapOpts = {
+  onSelect: (id) => openPlace(id),
+  onMapClick: () => closePanel('card'),
+  onMoveEnd: () => renderNear(),
+};
+let lastPos = null;
+
+const wantsGoogle = (key) => !!(GOOGLE_MAPS_KEY && MAP_STYLES[key] && MAP_STYLES[key].provider === 'google');
+
+async function makeMap(el, key) {
+  const dark = effectiveTheme() === 'dark';
+  if (wantsGoogle(key)) {
+    try {
+      const { loadGoogleMaps, GoogleTripMap } = await import('./gmap.js');
+      const gm = await loadGoogleMaps(GOOGLE_MAPS_KEY);
+      return new GoogleTripMap(el, mapOpts, gm, dark);
+    } catch (e) {
+      toast('Google Maps didn’t load — showing OpenStreetMap');
+    }
+  }
+  const m = new TripMap(el, mapOpts);
+  m.setStyle(wantsGoogle(key) ? 'osm' : key, dark);
+  return m;
+}
+
+// Build or rebuild the map in a fresh element, keeping the view, the pins and the location dot.
+let building = Promise.resolve();
+function initMap(key = mapStyleKey()) {
+  building = building.then(async () => {
+    const prev = ui.map;
+    const view = prev ? { c: prev.center(), z: prev.zoom() } : null;
+    if (prev) { ui.map = null; prev.destroy(); }
+    const old = document.getElementById('map');
+    const el = document.createElement('div');
+    el.id = 'map';
+    el.setAttribute('role', 'application');
+    el.setAttribute('aria-label', 'Map of places');
+    old.replaceWith(el);
+    const m = await makeMap(el, key);
+    ui.map = m;
+    m.onDragStart(() => { userMoved = true; });
+    if (view) m.setView([view.c.lat, view.c.lng], view.z);
+    else { const a = areaByKey(ui.area); if (a) m.setView(a.center, a.zoom); }
+    if (lastPos) m.setMe(lastPos);
+    refreshMarkers();
+    scheduleRender();
+  });
+  return building;
+}
+
+function restyle() {
+  const key = mapStyleKey();
+  const dark = effectiveTheme() === 'dark';
+  const google = !!ui.map && ui.map.provider === 'google';
+  // Google's light/dark scheme is fixed per map, so a theme change rebuilds it.
+  if (!ui.map || google !== wantsGoogle(key) || (google && ui.map.dark !== dark)) initMap(key);
+  else ui.map.setStyle(key, dark);
+}
+
+// Google calls this when the key is refused (wrong site, billing off, API not enabled).
+window.gm_authFailure = () => {
+  toast('Google Maps key not accepted — showing OpenStreetMap');
+  if (ui.map && ui.map.provider === 'google') initMap('osm');
+};
+
+// Stop Safari zooming the whole page with a pinch; the maps keep their own pinch zoom.
+for (const type of ['gesturestart', 'gesturechange']) {
+  document.addEventListener(type, (e) => {
+    if (!(e.target && e.target.closest && e.target.closest('#map, .minimap'))) e.preventDefault();
+  }, { passive: false });
 }
 
 function boot() {
   applyLook();
   installActions(document.body);
+  installPanelDrag(document.getElementById('overlays'));
+  installSheet(() => renderNear());
   setWide();
   if (WIDE.addEventListener) WIDE.addEventListener('change', setWide); else if (WIDE.addListener) WIDE.addListener(setWide);
-
-  ui.map = new TripMap(document.getElementById('map'), {
-    onSelect: (id) => openPlace(id),
-    onMapClick: () => closePanel('card'),
-    onMoveEnd: () => renderNear(),
-  });
-  ui.map.map.on('dragstart', () => { userMoved = true; });
-  ui.map.setStyle(getPrefs().mapStyle, effectiveTheme() === 'dark');
 
   const prefs = getPrefs();
   if (prefs.mode === 'cloud' && FIREBASE_CONFIG && prefs.tripKey) {
@@ -99,22 +169,22 @@ function boot() {
 
   ui.day = focusDay();
   ui.area = initialArea();
-  const a = areaByKey(ui.area);
-  if (a) ui.map.map.setView(a.center, a.zoom);
 
   const hash = (location.hash || '').slice(1);
   showTab(hash || (ui.wide ? 'today' : 'map'));
+  initMap();
 
   loadBatches().then(scheduleRender);
 
   let firstFix = true;
   onPosition((pos) => {
     if (!pos) return;
-    ui.map.setMe(pos);
+    lastPos = pos;
+    if (ui.map) ui.map.setMe(pos);
     if (firstFix) {
       firstFix = false;
       const k = areaOf({ lat: pos.lat, lng: pos.lng });
-      if (k && k !== 'other' && !userMoved) { ui.area = k; ui.map.flyTo([pos.lat, pos.lng], 15); }
+      if (k && k !== 'other' && !userMoved) { ui.area = k; if (ui.map) ui.map.flyTo([pos.lat, pos.lng], 15); }
     }
     scheduleRender();
   });
@@ -122,7 +192,6 @@ function boot() {
 
   setTimeout(() => geocodeMissing().then((n) => { if (n) toast(`Placed ${n} pin${n > 1 ? 's' : ''} from addresses`); }), 4000);
 
-  const restyle = () => ui.map.setStyle(getPrefs().mapStyle, effectiveTheme() === 'dark');
   document.addEventListener('mapstyle', restyle);
   window.addEventListener('themechange', () => { restyle(); scheduleRender(); });
   document.addEventListener('visibilitychange', () => {

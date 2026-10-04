@@ -1,7 +1,7 @@
 // Map tab: top bar, chips, near-me sheet, area switcher, filters and map options.
 import { store } from '../store.js';
-import { getPrefs, setPrefs, setFilters, effectiveTheme } from '../prefs.js';
-import { AREAS, AREA_ORDER, CHIPS, MAP_STYLES, MEAL_LABEL, MODES } from '../config.js';
+import { getPrefs, setPrefs, setFilters, mapStyleKey } from '../prefs.js';
+import { AREAS, AREA_ORDER, CHIPS, MAP_STYLES, MEAL_LABEL, MODES, GOOGLE_MAPS_KEY } from '../config.js';
 import { icon } from '../icons.js';
 import { esc, fmtDay, fmtDayShort, addDays, whenParts, minutesUntil, fmtIn, debounce, hasCoords } from '../util.js';
 import { on, openPanel, closePanel, toast, neutralBadge, grab, closeBtn, seg } from './core.js';
@@ -12,6 +12,7 @@ import { position, locateOnce } from '../geo.js';
 import { pendingCount } from '../research.js';
 import { openPlace } from './card.js';
 import { openInbox } from './inbox.js';
+import { applySheet, stepSheet } from './sheet.js';
 
 // ---------- render ----------
 export function renderMapTop() {
@@ -57,19 +58,20 @@ export function renderNear() {
     sub = `${list.length} place${list.length === 1 ? '' : 's'} · nearest first`;
   }
   const next = !q ? nextRow() : '';
-  const limit = ui.nearExpanded ? 80 : 6;
+  const full = ui.sheet === 'full';
+  const limit = full ? 80 : 6;
   const rows = list.slice(0, limit).map(({ p, d }) => placeRow(p, d)).join('');
   const empty = !list.length ? `<div class="empty small"><b>${q ? 'Nothing matches' : 'No places here yet'}</b><p>${q ? 'Try the English name, romaji or Japanese.' : store.all('places').length ? 'Loosen the filters, or switch area.' : 'Add a place with ＋ or keep some from the research inbox.'}</p></div>` : '';
-  el.className = 'near' + (ui.nearExpanded ? ' expanded' : '');
   el.innerHTML = `
-    <button type="button" class="near-head" data-action="near-toggle" aria-expanded="${ui.nearExpanded}">
+    <button type="button" class="near-head" data-action="near-toggle" aria-expanded="${full}" aria-label="${full ? 'Show less' : 'Show more'}: ${title}">
       ${grab()}
       <span class="hrow"><span class="vstack"><span class="t-title">${title}</span><span class="t-sec">${sub}</span></span>
-      <span class="txtbtn">${ui.nearExpanded ? 'Less' : 'All'}${icon(ui.nearExpanded ? 'chevronDown' : 'chevronUp', 's')}</span></span>
+      <span class="txtbtn">${full ? 'Less' : ui.sheet === 'min' ? 'Show' : 'All'}${icon(full ? 'chevronDown' : 'chevronUp', 's')}</span></span>
     </button>
     <div class="near-list scroll">${next}${rows}${empty}
       <div class="near-foot"><button type="button" class="btn sec sm" data-action="add-place">${icon('plus', 's')}Add a place</button></div>
     </div>`;
+  if (!el.classList.contains('dragging')) applySheet();
 }
 
 function nextRow() {
@@ -174,15 +176,20 @@ function filtersPanel() {
 }
 
 // ---------- map options ----------
+// Map style choices (Google Maps only when a key is configured). Shared with Settings.
+export function mapStyleRows() {
+  const cur = mapStyleKey();
+  return Object.entries(MAP_STYLES).filter(([k]) => k !== 'google' || GOOGLE_MAPS_KEY).map(([k, s]) =>
+    `<button type="button" class="row choice${cur === k ? ' current' : ''}" data-action="map-style" data-value="${k}">
+      <span class="main"><span class="name">${esc(s.label)}</span><span class="meta wrap">${esc(s.note)}</span></span>${cur === k ? icon('check', 's ok') : ''}</button>`).join('');
+}
+
 function mapOptions() {
   const prefs = getPrefs();
   return `${grab()}
     <div class="sheet-head"><h2 class="t-title">Map</h2>${closeBtn('mapopts')}</div>
     <div class="scroll pad-lg">
-      <div class="fgroup"><span class="t-over">Map style</span>
-        ${Object.entries(MAP_STYLES).map(([k, s]) => `<button type="button" class="row choice${prefs.mapStyle === k ? ' current' : ''}" data-action="map-style" data-value="${k}">
-          <span class="main"><span class="name">${esc(s.label)}</span><span class="meta wrap">${esc(s.note)}</span></span>${prefs.mapStyle === k ? icon('check', 's ok') : ''}</button>`).join('')}
-      </div>
+      <div class="fgroup"><span class="t-over">Map style</span>${mapStyleRows()}</div>
       <div class="fgroup"><span class="t-over">Pin labels</span>${seg('Pin labels', [['key', 'Booked & must'], ['all', 'All'], ['off', 'Off']], prefs.labels, 'pref-labels')}</div>
       <div class="fgroup"><span class="t-over">Pin style</span>${seg('Pin style', [['signage', 'Signage'], ['outline', 'Outline'], ['mono', 'Mono']], prefs.pins, 'pref-pins')}</div>
     </div>`;
@@ -190,9 +197,9 @@ function mapOptions() {
 
 // ---------- actions ----------
 const search = debounce(() => { renderNear(); refreshMarkers(); }, 160);
-on('search', (d, el) => { ui.query = el.value; ui.nearExpanded = !!el.value || ui.nearExpanded; search(); });
+on('search', (d, el) => { ui.query = el.value; if (el.value) ui.sheet = 'full'; search(); });
 on('search-clear', () => { ui.query = ''; renderMapTop(); renderNear(); refreshMarkers(); });
-on('near-toggle', () => { ui.nearExpanded = !ui.nearExpanded; renderNear(); });
+on('near-toggle', () => stepSheet());
 on('chip', (d) => {
   const f = getPrefs().filters;
   const chips = f.chips.includes(d.key) ? f.chips.filter((k) => k !== d.key) : [...f.chips, d.key];
@@ -226,7 +233,12 @@ on('locate', async () => {
   } catch (e) { toast('Location isn’t available — distances use tonight’s hotel'); }
 });
 on('map-options', () => openPanel('mapopts', mapOptions));
-on('map-style', (d) => { setPrefs({ mapStyle: d.value }); if (ui.map) ui.map.setStyle(d.value, effectiveTheme() === 'dark'); refreshPanelBody('mapopts', mapOptions); });
+on('map-style', (d) => {
+  setPrefs({ mapStyle: d.value, mapStyleSet: true });
+  document.dispatchEvent(new Event('mapstyle')); // main.js restyles, or swaps map engines
+  refreshPanelBody('mapopts', mapOptions);
+  if (document.querySelector('[data-panel="settings"]')) rerender('settings');
+});
 on('pref-labels', (d) => { setPrefs({ labels: d.value }); refreshMarkers(); refreshPanelBody('mapopts', mapOptions); });
 on('pref-pins', (d) => { setPrefs({ pins: d.value }); refreshPanelBody('mapopts', mapOptions); rerender('*'); });
 on('open-place', (d) => openPlace(d.id));
