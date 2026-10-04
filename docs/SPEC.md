@@ -150,6 +150,7 @@ interface Place {
   priority?: "must" | "want" | "maybe";
   status?: "open" | "visited" | "skipped";
   planned?: { date: string; slot?: "breakfast" | "lunch" | "dinner" | "am" | "pm" | "night" };
+                                      // a meal slot makes the place an *option* for that meal; several allowed
   origin: "manual" | "claude";        // never changes
   added: { by: string; at: ISO };
   edited?: { by: string; at: ISO };   // set by the place editor only
@@ -166,6 +167,7 @@ interface Booking {
   id: string;
   place_id?: string;
   kind: "flight" | "hotel" | "meal" | "car" | "ticket" | "other";
+  meal?: "breakfast" | "lunch" | "dinner" | "other"; // meal bookings: which meal it fills (else guessed from the time)
   start: ISO; end?: ISO;              // check-in/out, pick-up/return, departure/arrival
   status: "confirmed" | "hold" | "to_cancel" | "cancelled";
   decision_group?: string;            // double-bookings

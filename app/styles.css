@@ -275,6 +275,23 @@ main { position: relative; flex: 1; min-height: 0; }
 .card b.big, b.big { font-size: 17px; line-height: 1.25; }
 .light-card { flex-direction: row; align-items: center; gap: 12px; }
 .quickdays { display: flex; align-items: center; gap: 8px; padding: 6px var(--pad) 0; flex-wrap: wrap; }
+/* Today: one chip per trip day; the real today is outlined. */
+.daystrip { display: flex; gap: 6px; overflow-x: auto; padding: 4px var(--pad) 8px; scrollbar-width: none; scroll-snap-type: x proximity; flex: none; }
+.daystrip::-webkit-scrollbar { display: none; }
+.daychip { flex: none; width: 50px; height: 54px; border-radius: 12px; border: 0; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); color: var(--ink); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; scroll-snap-align: center; padding: 0; }
+.daychip span { font-size: 11.5px; font-weight: 500; color: var(--muted); }
+.daychip b { font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.daychip.is-today { box-shadow: inset 0 0 0 2px var(--now); }
+.daychip.is-today span { color: var(--now); }
+.daychip.on { background: var(--ink); color: var(--surface); box-shadow: none; }
+.daychip.on span { color: inherit; opacity: .75; }
+.iconbtn[disabled] { opacity: .35; cursor: default; }
+/* Meal options: a solid slot header, then the places hanging under it. */
+.slot.opts { border-style: solid; border-color: var(--line2); }
+.tli.opt { border-top: 0; padding-top: 2px; }
+.pickwrap { padding: 12px var(--pad) 0; display: flex; flex-direction: column; gap: 6px; flex: none; }
+.pickwrap .btn { width: 100%; flex: none; }
+.pickbar { flex: none; margin: 12px var(--pad) 0; padding: 8px 8px 8px 12px; border-radius: 12px; background: var(--ok-bg); display: flex; align-items: center; gap: 8px; font-size: var(--fs-sec); font-weight: 500; }
 .banner { margin: 10px var(--pad) 0; padding: 12px 14px; border-radius: 12px; background: var(--hold-bg); color: var(--ink); display: flex; gap: 10px; align-items: center; font-size: var(--fs-sec); line-height: 1.4; }
 .banner .ic { color: var(--hold); }
 .banner.ai { background: var(--ai-bg); }

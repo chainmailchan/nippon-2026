@@ -5,7 +5,7 @@ import { FIREBASE_CONFIG, GOOGLE_MAPS_KEY, MAP_STYLES } from './config.js';
 import { installActions, installPanelDrag, on, refreshPanels, closePanel, isOpen, toast } from './ui/core.js';
 import { ui, onRender } from './state.js';
 import { TripMap } from './map.js';
-import { renderMapView, renderNear, initialArea, refreshMarkers } from './ui/mapview.js';
+import { renderMapView, renderNear, initialArea, refreshMarkers, endPick } from './ui/mapview.js';
 import { installSheet, applySheet } from './ui/sheet.js';
 import { renderToday } from './ui/today.js';
 import { renderTrip } from './ui/trip.js';
@@ -52,6 +52,7 @@ function showTab(tab) {
     if (isOn) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
   });
   if (tab !== 'map' && !ui.wide) closePanel('card');
+  if (tab !== 'map') endPick(); // "adding options" ends when you go back to the plan
   renderNow();
   applySheet();
   if (ui.map) setTimeout(() => ui.map.invalidate(), 40);

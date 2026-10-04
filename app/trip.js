@@ -86,6 +86,15 @@ export function dayArea(day) {
   return null;
 }
 
+// Keep a day inside the trip (before the trip → first day, after → last day).
+export function clampDay(day) {
+  const days = tripDays();
+  if (!days.length) return day || todayJST();
+  if (!day || day < days[0]) return days[0];
+  if (day > days[days.length - 1]) return days[days.length - 1];
+  return day;
+}
+
 // The day the app should open on: today during the trip, else the first day.
 export function focusDay() {
   const t = todayJST();
@@ -103,6 +112,14 @@ function mealFromTime(time) {
   if (time < '10:30') return 'breakfast';
   if (time < '15:30') return 'lunch';
   return 'dinner';
+}
+
+// Which meal a meal booking is for: the traveller's choice in the booking, else guessed from its time.
+// 'other' (drinks, a snack) fills no meal slot.
+export function bookingMeal(b) {
+  if (b.meal === 'other') return null;
+  if (MEALS.includes(b.meal)) return b.meal;
+  return mealFromTime(whenParts(b.start).time);
 }
 
 // Timeline entries for a day: bookings, planned places, tasks, and meal slots.
@@ -123,29 +140,33 @@ export function dayTimeline(day) {
       if (s.date === day) push({ kind: 'pickup', time: s.time, sort: s.time || '09:00', title: `Car pick-up · ${placeName(b.place_id)}`, booking: b, place });
       if (e.date === day) push({ kind: 'return', time: e.time, sort: e.time || '17:00', title: `Car return · ${placeName(b.place_id_end)}`, sub: e.time ? `By ${e.time}` : '', booking: b, place: placeEnd });
     } else if (b.kind === 'meal') {
-      if (s.date === day) push({ kind: 'meal', meal: mealFromTime(s.time), time: s.time, sort: s.time || '12:00', title: `${MEAL_LABEL[mealFromTime(s.time)] || 'Meal'} · ${placeName(b.place_id) || b.title}`, booking: b, place });
+      const m = bookingMeal(b);
+      if (s.date === day) push({ kind: 'meal', meal: m, time: s.time, sort: s.time || (m ? MEAL_TIME[m] : '12:00'), title: `${MEAL_LABEL[m] || 'Meal'} · ${placeName(b.place_id) || b.title}`, booking: b, place });
     } else {
       if (s.date === day) push({ kind: b.kind || 'other', time: s.time, sort: s.time || '09:00', title: b.title || placeName(b.place_id), booking: b, place });
     }
   }
+  // Places added to a meal are options for it (several allowed); other plans are just "planned".
   for (const p of store.all('places')) {
     if (p.planned && p.planned.date === day && p.status !== 'skipped') {
       const slot = p.planned.slot || '';
-      const sortBy = { breakfast: '08:00', lunch: '12:30', dinner: '19:00', am: '10:00', pm: '15:00', night: '21:00' }[slot] || '13:00';
-      push({ kind: 'plan', meal: MEALS.includes(slot) ? slot : null, time: null, slotLabel: slot, sort: sortBy, title: p.name, place: p });
+      const meal = MEALS.includes(slot) ? slot : null;
+      const sortBy = meal ? MEAL_TIME[meal] + '~' : { am: '10:00', pm: '15:00', night: '21:00' }[slot] || '13:00';
+      push({ kind: 'plan', meal, option: !!meal, time: null, slotLabel: slot, sort: sortBy, title: p.name, place: p });
     }
   }
   for (const it of store.all('lists')) {
     if (it.due === day) push({ kind: 'task', time: null, sort: '07:00', title: it.title, item: it });
   }
   for (const m of mealSlots(day)) {
-    if (!m.coveredBy || m.coveredBy === 'base') push({ kind: 'slot', meal: m.meal, sort: MEAL_TIME[m.meal], time: null, covered: m.coveredBy === 'base', base: m.base, title: MEAL_LABEL[m.meal] });
+    if (m.coveredBy !== 'booking') push({ kind: 'slot', meal: m.meal, sort: MEAL_TIME[m.meal], time: null, covered: m.coveredBy === 'base', options: m.options, base: m.base, title: MEAL_LABEL[m.meal] });
   }
   out.sort((a, b) => (a.sort || '').localeCompare(b.sort || ''));
   return out;
 }
 
-// Which meals are covered on `day`.
+// Which meals are covered on `day`: 'base' (the hotel's), 'booking', 'options' (places added to the meal,
+// nothing booked yet), 'travel' (flight), or null (open). `options` counts the places added to each meal.
 export function mealSlots(day) {
   const r = tripRange();
   if (!r || day < r.day1 || day > r.end) return [];
@@ -157,11 +178,14 @@ export function mealSlots(day) {
   if (tonight && (tonight.booking.meals_included || []).includes('dinner')) covered.dinner = 'base';
   for (const b of activeBookings()) {
     if (b.kind !== 'meal') continue;
-    const s = whenParts(b.start);
-    if (s.date === day) { const m = mealFromTime(s.time); if (m && !covered[m]) covered[m] = 'booking'; }
+    if (whenParts(b.start).date === day) { const m = bookingMeal(b); if (m && !covered[m]) covered[m] = 'booking'; }
   }
+  const options = { breakfast: 0, lunch: 0, dinner: 0 };
   for (const p of store.all('places')) {
-    if (p.planned && p.planned.date === day && MEALS.includes(p.planned.slot) && !covered[p.planned.slot]) covered[p.planned.slot] = 'plan';
+    if (p.planned && p.planned.date === day && p.status !== 'skipped' && MEALS.includes(p.planned.slot)) {
+      options[p.planned.slot]++;
+      if (!covered[p.planned.slot]) covered[p.planned.slot] = 'options';
+    }
   }
   // Flight days: no breakfast slot on the arrival morning, no dinner slot on the departure evening.
   for (const b of activeBookings()) {
@@ -169,7 +193,7 @@ export function mealSlots(day) {
     if (whenParts(b.end).date === day && whenParts(b.end).time && whenParts(b.end).time > '06:00') covered.breakfast = covered.breakfast || 'travel';
     if (whenParts(b.start).date === day && whenParts(b.start).time && whenParts(b.start).time >= '18:00') covered.dinner = covered.dinner || 'travel';
   }
-  return MEALS.map((meal) => ({ meal, coveredBy: covered[meal], base: bases[meal] ? bases[meal].place : null }))
+  return MEALS.map((meal) => ({ meal, coveredBy: covered[meal], options: options[meal], base: bases[meal] ? bases[meal].place : null }))
     .filter((m) => m.coveredBy !== 'travel');
 }
 

@@ -3,26 +3,32 @@ import { store } from '../store.js';
 import { getPrefs, setFilters } from '../prefs.js';
 import { MEAL_LABEL } from '../config.js';
 import { icon } from '../icons.js';
-import { esc, fmtDay, addDays, todayJST, daysBetween, fmtClock, hasCoords, minutesUntil, fmtIn, whenParts } from '../util.js';
+import { esc, fmtDay, addDays, todayJST, daysBetween, fmtClock, hasCoords, minutesUntil, fmtIn, whenParts, wdShort } from '../util.js';
 import { on, badge, neutralBadge, emptyState, tag } from './core.js';
 import { ui, rerender } from '../state.js';
-import { dayTimeline, dayNumber, dayArea, areaByKey, tripDays, tripRange, nightBase, nextUp, mealSlots, placeStatus } from '../trip.js';
+import { dayTimeline, dayNumber, dayArea, areaByKey, tripDays, tripRange, nightBase, nextUp, mealSlots, placeStatus, clampDay } from '../trip.js';
 import { lightTimes } from '../sun.js';
 import { openPlace } from './card.js';
 import { goToArea } from './mapview.js';
 
+const PLAN_LABEL = { am: 'Morning', pm: 'Afternoon', night: 'Evening' };
 const KIND_GLYPH = { checkin: 'bed', checkout: 'bed', depart: 'plane', arrive: 'plane', pickup: 'car', return: 'car', meal: 'utensils', ticket: 'ticket', other: 'calendar' };
 
 function mask(ref) { const s = String(ref); return s.length <= 4 ? '••••' : '•'.repeat(Math.min(s.length - 4, 8)) + s.slice(-4); }
 
+// compact: Trip view and the Tomorrow preview, where meal headers aren't shown, so options carry the meal name.
 export function entryRow(e, day, { compact = false } = {}) {
-  const time = e.time || (e.kind === 'plan' && e.slotLabel ? (MEAL_LABEL[e.slotLabel] || e.slotLabel) : (e.kind === 'slot' ? MEAL_LABEL[e.meal] : ''));
+  const planLabel = e.kind === 'plan' && e.slotLabel && !(e.option && !compact) ? (MEAL_LABEL[e.slotLabel] || PLAN_LABEL[e.slotLabel] || e.slotLabel) : '';
+  const time = e.time || planLabel || (e.kind === 'slot' ? MEAL_LABEL[e.meal] : '');
   const timeCls = e.time ? 'time' : 'time na';
   if (e.kind === 'slot') {
     if (e.covered) {
       return `<div class="tli"><span class="${timeCls}">${esc(MEAL_LABEL[e.meal])}</span><div class="what">${badge('restaurant', 'sm')}<div class="main"><span class="ttl">At ${esc(e.base ? e.base.name : 'the hotel')}</span><span class="t-sec">Included with the stay</span></div></div></div>`;
     }
-    return `<div class="tli"><span class="${timeCls}">${esc(MEAL_LABEL[e.meal])}</span><div class="slot"><div class="vstack"><b>Open</b>${!compact ? `<span class="t-sec">${esc(e.base ? 'Near ' + e.base.name : 'Pick somewhere nearby')}</span>` : ''}</div><button type="button" class="btn sm sec" data-action="find-meal" data-meal="${e.meal}" data-day="${day}">Find</button></div></div>`;
+    const n = e.options || 0;
+    const find = `<button type="button" class="btn sm sec" data-action="find-meal" data-meal="${e.meal}" data-day="${day}">${n ? 'Add' : 'Find'}</button>`;
+    if (n) return `<div class="tli"><span class="${timeCls}">${esc(MEAL_LABEL[e.meal])}</span><div class="slot opts"><div class="vstack"><b>${n} option${n > 1 ? 's' : ''}</b>${!compact ? '<span class="t-sec">Nothing booked yet</span>' : ''}</div>${find}</div></div>`;
+    return `<div class="tli"><span class="${timeCls}">${esc(MEAL_LABEL[e.meal])}</span><div class="slot"><div class="vstack"><b>Open</b>${!compact ? `<span class="t-sec">${esc(e.base ? 'Near ' + e.base.name : 'Pick somewhere nearby')}</span>` : ''}</div>${find}</div></div>`;
   }
   if (e.kind === 'task') {
     const it = e.item;
@@ -36,10 +42,10 @@ export function entryRow(e, day, { compact = false } = {}) {
   if (b && b.details && !compact) sub.push(esc(b.details));
   if (b && b.ref && !compact) sub.push(`Ref <span class="masked">${esc(ui.revealed.has(b.id) ? b.ref : mask(b.ref))}</span>`);
   if (b && b.notes && !compact) sub.push(esc(b.notes));
-  if (e.kind === 'plan') sub.push('Planned');
+  if (e.kind === 'plan') sub.push(e.option ? 'Option' : 'Planned');
   const tags = b ? (b.status === 'to_cancel' ? '<span class="tag hold">To cancel</span>' : b.status === 'hold' ? '<span class="tag hold">Held</span>' : '') : '';
   const open = p ? `data-action="open-from-list" data-id="${esc(p.id)}"` : '';
-  return `<div class="tli"><span class="${timeCls}">${esc(time || '—')}</span>
+  return `<div class="tli${e.option && !compact ? ' opt' : ''}"><span class="${timeCls}">${esc(time || (e.option && !compact ? '' : '—'))}</span>
     <${p ? 'button type="button"' : 'div'} class="what${p ? ' tap' : ''}" ${open}>${glyphBadge}<span class="main"><span class="ttl">${esc(e.title)}</span>${sub.length ? `<span class="t-sec">${sub.join(' · ')}</span>` : ''}${tags ? `<span class="tags">${tags}</span>` : ''}</span></${p ? 'button' : 'div'}></div>`;
 }
 
@@ -78,8 +84,9 @@ export function renderToday() {
   if (!el) return;
   const days = tripDays();
   const today = todayJST();
-  if (!ui.day) ui.day = days.length ? (today < days[0] ? days[0] : today > days[days.length - 1] ? days[days.length - 1] : today) : today;
+  ui.day = days.length ? clampDay(ui.day || today) : (ui.day || today); // the day shown never leaves the trip
   const day = ui.day;
+  const first = days.length && day === days[0], last = days.length && day === days[days.length - 1];
   const dn = dayNumber(day);
   const area = areaByKey(dayArea(day));
   const r = tripRange();
@@ -98,17 +105,14 @@ export function renderToday() {
         <h1>${esc(fmtDay(day))}</h1>
       </div>
       <div class="hstack">
-        <button type="button" class="iconbtn flat" data-action="day-step" data-step="-1" aria-label="Previous day">${icon('chevronLeft')}</button>
-        <button type="button" class="iconbtn flat" data-action="day-step" data-step="1" aria-label="Next day">${icon('chevronRight')}</button>
+        <button type="button" class="iconbtn flat" data-action="day-step" data-step="-1" aria-label="Previous day"${!days.length || first ? ' disabled' : ''}>${icon('chevronLeft')}</button>
+        <button type="button" class="iconbtn flat" data-action="day-step" data-step="1" aria-label="Next day"${!days.length || last ? ' disabled' : ''}>${icon('chevronRight')}</button>
         <button type="button" class="iconbtn flat" data-action="settings" aria-label="Settings">${icon('settings')}</button>
       </div>
     </div>
     <div class="scroll body">
-      ${days.length ? `<div class="quickdays">
-        <button type="button" class="chip plain${day === today ? ' on' : ''}" data-action="day-go" data-day="${today}">Today</button>
-        <button type="button" class="chip plain${isTomorrow ? ' on' : ''}" data-action="day-go" data-day="${addDays(today, 1)}">Tomorrow</button>
-        ${before !== null ? `<span class="t-sec">Trip starts in ${before} day${before === 1 ? '' : 's'}</span>` : ''}
-      </div>` : ''}
+      ${days.length ? `<div class="daystrip" role="toolbar" aria-label="Trip days">${days.map((d) => `<button type="button" class="daychip${d === day ? ' on' : ''}${d === today ? ' is-today' : ''}" data-action="day-go" data-day="${d}" aria-pressed="${d === day}" aria-label="${esc(fmtDay(d))}${d === today ? ', today' : ''}"><span>${esc(d === today ? 'Today' : wdShort(d))}</span><b>${+d.slice(8, 10)}</b></button>`).join('')}</div>
+        ${before !== null ? `<p class="t-sec pad-x">Trip starts in ${before} day${before === 1 ? '' : 's'}.</p>` : ''}` : ''}
       ${!days.length ? emptyState('No trip data yet', store.mode === 'local' ? 'This device has no trip loaded. Join the shared trip in Settings, or add bookings yourself.' : 'Waiting for the trip to load…', '<button type="button" class="btn sec sm" data-action="settings">Open settings</button>') : ''}
       ${nextCard(day)}
       ${lightCard(day)}
@@ -116,18 +120,32 @@ export function renderToday() {
       ${tmr.length ? `<div class="ghead"><span class="t-over">${esc(isTomorrow ? 'The day after' : 'Tomorrow')} · ${esc(fmtDay(tomorrow))}</span>${openMeals ? `<span class="t-cap">${openMeals} open meal${openMeals > 1 ? 's' : ''}</span>` : ''}</div>
         <div class="group">${tmr.filter((e) => e.kind !== 'slot').slice(0, 4).map((e) => entryRow(e, tomorrow, { compact: true })).join('') || '<div class="tli"><span class="time na">—</span><span class="t-sec">Nothing fixed</span></div>'}</div>` : ''}
     </div>`;
+  // Keep the day strip where the traveller scrolled it; centre the chosen day when it changes.
+  const strip = el.querySelector('.daystrip');
+  const chosen = strip && strip.querySelector('.daychip.on');
+  if (strip && chosen) {
+    if (stripState.day === day && stripState.left !== null) strip.scrollLeft = stripState.left;
+    else strip.scrollLeft = chosen.offsetLeft - (strip.clientWidth - chosen.offsetWidth) / 2;
+    stripState.day = day;
+    stripState.left = strip.scrollLeft;
+    strip.addEventListener('scroll', () => { stripState.left = strip.scrollLeft; }, { passive: true });
+  }
 }
+const stripState = { day: null, left: null };
 
 on('day-step', (d) => {
   const days = tripDays();
-  const next = addDays(ui.day, +d.step);
-  if (days.length && (next < days[0] || next > days[days.length - 1])) return;
-  ui.day = next; rerender('*');
+  if (!days.length) return;
+  const i = days.indexOf(clampDay(ui.day));
+  ui.day = days[Math.max(0, Math.min(days.length - 1, i + +d.step))];
+  rerender('*');
 });
 on('day-go', (d) => { ui.day = d.day; rerender('*'); });
 on('toggle-item', (d) => { const it = store.get('lists', d.id); if (it) store.patch('lists', d.id, { done: !it.done }); });
 on('open-from-list', (d) => { ui.selected = d.id; if (!ui.wide) document.dispatchEvent(new CustomEvent('tab', { detail: 'map' })); openPlace(d.id); });
 on('find-meal', (d) => {
+  const prev = ui.pickFor ? ui.pickFor.prevFilters : { ...getPrefs().filters };
+  ui.pickFor = { day: d.day, slot: d.meal, prevFilters: prev };
   setFilters({ chips: ['meal'], meal: d.meal });
   const k = dayArea(d.day);
   document.dispatchEvent(new CustomEvent('tab', { detail: 'map' }));

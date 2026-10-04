@@ -6,6 +6,7 @@ import { icon } from '../icons.js';
 import { esc, uid, slugify, coordsFromMapsUrl, hasCoords, whenParts } from '../util.js';
 import { on, openPanel, closePanel, setAfterPaint, toast, badge, seg } from './core.js';
 import { ui, rerender } from '../state.js';
+import { bookingMeal } from '../trip.js';
 import { leafletPicker } from '../map.js';
 import { geocode, locateOnce, position } from '../geo.js';
 
@@ -185,6 +186,7 @@ function bookingForm() {
     ${b.kind === 'car' || b.kind === 'flight' ? `<div class="field"><label for="f-place2">${b.kind === 'car' ? 'Return at' : 'Arrive at'}</label><select id="f-place2" name="place_id_end">${opt(b.place_id_end)}</select></div>` : ''}
     <div class="two">${field(b.kind === 'hotel' ? 'Check-in date' : 'Date', 'sdate', s.date, { type: 'date' })}${field('Time', 'stime', s.time, { type: 'time' })}</div>
     ${b.kind === 'flight' ? tzField('Departure time zone', 'soff', s.off) : ''}
+    ${b.kind === 'meal' ? `<div class="field"><label>Meal</label>${seg('Meal', [['breakfast', 'Breakfast'], ['lunch', 'Lunch'], ['dinner', 'Dinner'], ['other', 'Other']], b.meal || bookingMeal(b) || '', 'bdraft-mealslot')}<p class="t-cap">Fills that meal on the day, so it no longer shows as open. Other (drinks, a snack) fills none.</p></div>` : ''}
     ${['hotel', 'car', 'flight'].includes(b.kind) ? `<div class="two">${field(b.kind === 'hotel' ? 'Check-out date' : b.kind === 'car' ? 'Return date' : 'Arrival date', 'edate', e.date, { type: 'date' })}${field('Time', 'etime', e.time, { type: 'time' })}</div>` : ''}
     ${b.kind === 'flight' ? tzField('Arrival time zone', 'eoff', e.off) : ''}
     ${b.kind === 'hotel' ? `<div class="field"><label>Meals included</label><div class="chips wrap">${['breakfast', 'dinner'].map((m) => `<button type="button" class="chip plain${(b.meals_included || []).includes(m) ? ' on' : ''}" data-action="bdraft-meal" data-value="${m}">${MEAL_LABEL[m]}</button>`).join('')}</div></div>` : ''}
@@ -214,6 +216,7 @@ function brepaint() { const p = document.querySelector('[data-panel="edit-bookin
 
 on('bdraft-kind', (d) => { bsync(); bdraft.kind = d.value; brepaint(); });
 on('bdraft-status', (d) => { bsync(); bdraft.status = d.value; brepaint(); });
+on('bdraft-mealslot', (d) => { bsync(); bdraft.meal = d.value; brepaint(); });
 on('bdraft-meal', (d) => { bsync(); const m = bdraft.meals_included || []; bdraft.meals_included = m.includes(d.value) ? m.filter((x) => x !== d.value) : [...m, d.value]; brepaint(); });
 on('save-booking', () => {
   bsync();
@@ -221,6 +224,7 @@ on('save-booking', () => {
   const out = { ...bdraft };
   if (!out.id) out.id = 'b-' + uid().slice(0, 10);
   if (!out.title) { const p = out.place_id && store.get('places', out.place_id); out.title = p ? p.name : 'Booking'; }
+  if (out.kind !== 'meal') delete out.meal;
   for (const k of Object.keys(out)) if (out[k] === '' || (Array.isArray(out[k]) && !out[k].length)) delete out[k];
   store.put('bookings', out);
   closePanel('edit-booking');

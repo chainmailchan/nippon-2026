@@ -10,6 +10,7 @@ export const ui = {
   wide: false,           // iPad landscape / desktop layout
   map: null,             // TripMap instance
   area: null,            // current area key ('' = whole trip)
+  pickFor: null,         // { day, slot, prevFilters } while choosing options for a meal (Find from Today/Trip)
   focus: null,           // { ids:[...] } or { cat } — "Find" from Lists narrows the map to these
   revealKey: false,
 };

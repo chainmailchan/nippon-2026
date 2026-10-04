@@ -107,6 +107,13 @@ function cardHtml(id) {
   const sources = (p.research && p.research.sources) || [];
   const rs = p.research || {};
   const edited = p.edited && p.edited.by ? ' · edited by ' + esc(p.edited.by) : '';
+  const pick = ui.pickFor;
+  const pickLabel = pick ? `${MEAL_LABEL[pick.slot]} option · ${fmtDay(pick.day)}` : '';
+  const isPicked = pick && p.planned && p.planned.date === pick.day && p.planned.slot === pick.slot;
+  const pickBlock = !pick ? '' : isPicked
+    ? `<div class="pickbar">${icon('check', 's ok')}<span class="grow">${esc(pickLabel)}</span><button type="button" class="txtbtn sm" data-action="unplan" data-id="${esc(p.id)}">Remove</button></div>`
+    : `<div class="pickwrap"><button type="button" class="btn pri" data-action="pick-option" data-id="${esc(p.id)}">${icon('plus', 's')}Add as ${esc(pickLabel.charAt(0).toLowerCase() + pickLabel.slice(1))}</button>
+       ${p.planned ? `<p class="t-cap">Moves it from ${esc(fmtDay(p.planned.date))}${p.planned.slot ? ' · ' + esc(MEAL_LABEL[p.planned.slot] || p.planned.slot) : ''}.</p>` : ''}</div>`;
   const prov = p.origin === 'claude'
     ? `${icon('sparkles')}<span>Researched by Claude${rs.at ? ' · ' + esc(rs.at.slice(0, 10)) : ''}${rs.confidence ? ' · ' + esc(rs.confidence) + ' confidence' : ''}${edited}</span>`
     : `${icon('pencil')}<span>Added by ${esc((p.added && p.added.by) || 'you')}${edited}</span>`;
@@ -126,6 +133,7 @@ function cardHtml(id) {
     </div>
 
     ${st.bookings.map(bookingBox).join('')}
+    ${pickBlock}
     ${p.summary ? `<p class="summary">${esc(p.summary)}</p>` : ''}
     ${p.order ? `<p class="summary order"><b>Order</b> ${esc(p.order)}</p>` : ''}
 
@@ -244,6 +252,12 @@ on('plan-slot', (d) => {
   const p = store.get('places', d.id);
   const date = (p.planned && p.planned.date) || ui.day || focusDay();
   store.patch('places', d.id, { planned: { date, slot: d.slot } }); refreshPanel('addday');
+});
+on('pick-option', (d) => {
+  const pick = ui.pickFor;
+  if (!pick) return;
+  store.patch('places', d.id, { planned: { date: pick.day, slot: pick.slot } });
+  toast(`Added as a ${MEAL_LABEL[pick.slot].toLowerCase()} option for ${fmtDay(pick.day)}`);
 });
 on('unplan', (d) => { const p = store.get('places', d.id); const { planned, ...rest } = p; store.put('places', rest); });
 on('edit-place', (d) => openEditPlace(d.id));

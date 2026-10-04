@@ -38,6 +38,7 @@ export function renderMapTop() {
       <button type="button" class="iconbtn" data-action="inbox" aria-label="Research inbox${pend ? ', ' + pend + ' to review' : ''}">${icon('inbox')}${pend ? '<span class="dot"></span>' : ''}</button>
     </div>
     <div class="chips" role="toolbar" aria-label="Filters">
+      ${ui.pickFor ? `<button type="button" class="chip plain on focus" data-action="end-pick" aria-label="Stop adding ${esc(MEAL_LABEL[ui.pickFor.slot].toLowerCase())} options">${esc(MEAL_LABEL[ui.pickFor.slot])} options · ${esc(fmtDayShort(ui.pickFor.day))}${icon('x', 's')}</button>` : ''}
       ${ui.focus ? `<button type="button" class="chip plain on focus" data-action="clear-focus" aria-label="Stop showing only ${esc(ui.focus.label)}">${esc(ui.focus.label)}${icon('x', 's')}</button>` : ''}
       <button type="button" class="chip plain${advanced ? ' on' : ''}" data-action="filters">${icon('sliders', 's')}Filters${advanced ? ` · ${advanced}` : ''}</button>
       <button type="button" class="chip plain${f.bookedOnly ? ' on' : ''}" data-action="toggle-booked" aria-pressed="${f.bookedOnly}">${icon('check', 's ok')}Booked</button>
@@ -243,6 +244,15 @@ on('pref-labels', (d) => { setPrefs({ labels: d.value }); refreshMarkers(); refr
 on('pref-pins', (d) => { setPrefs({ pins: d.value }); refreshPanelBody('mapopts', mapOptions); rerender('*'); });
 on('open-place', (d) => openPlace(d.id));
 on('clear-focus', () => { ui.focus = null; rerender('map'); });
+
+// Leaving "adding options" puts the filters back as they were before Find.
+export function endPick() {
+  if (!ui.pickFor) return;
+  if (ui.pickFor.prevFilters) setFilters(ui.pickFor.prevFilters);
+  ui.pickFor = null;
+  rerender('*');
+}
+on('end-pick', () => endPick());
 on('inbox', () => openInbox());
 
 function refreshPanelBody(id, fn) { const p = document.querySelector(`[data-panel="${id}"] .panel-body`); if (p) p.innerHTML = fn(); }
