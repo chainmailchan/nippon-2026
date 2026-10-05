@@ -1,6 +1,7 @@
 // The near-me sheet over the map: three heights (min, peek, full), dragged or flicked by its header.
 // The map buttons, the map attribution and (for Google Maps) the map's bottom edge follow its height.
 import { ui } from '../state.js';
+import { isOpen } from './core.js';
 
 const ORDER = ['min', 'peek', 'full'];
 let onChange = () => {};
@@ -23,15 +24,24 @@ export function heights() {
   };
 }
 
-// Size the sheet for ui.sheet (or an explicit height while dragging).
+// An open place card covers the bottom of the map (its height, not counting the slide-in).
+function cardCover() {
+  if (ui.wide || !isOpen('card')) return 0;
+  const bodies = document.querySelectorAll('[data-panel="card"] .panel-body');
+  return bodies.length ? bodies[bodies.length - 1].offsetHeight : 0;
+}
+
+// Size the sheet for ui.sheet (or an explicit height while dragging). While a place card is open, the map, its
+// buttons and attribution stop at the card's top edge, and the list tucks in behind the card (keeping its state).
 export function applySheet(px) {
   const n = near(), v = view();
   if (!n || !v) return;
   if (ui.wide) { n.style.height = ''; v.style.removeProperty('--sheet-h'); n.classList.remove('min', 'expanded'); return; }
   if (!v.clientHeight) return; // map tab hidden: size it when shown
   const h = px !== undefined ? px : heights()[ui.sheet] || heights().peek;
-  n.style.height = h + 'px';
-  v.style.setProperty('--sheet-h', h + 'px');
+  const cover = cardCover();
+  n.style.height = (cover ? Math.min(h, cover) : h) + 'px';
+  v.style.setProperty('--sheet-h', (cover || h) + 'px');
   if (px === undefined) {
     n.classList.toggle('expanded', ui.sheet === 'full');
     n.classList.toggle('min', ui.sheet === 'min');

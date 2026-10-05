@@ -4,7 +4,7 @@ import { getPrefs, setPrefs, setFilters, mapStyleKey } from '../prefs.js';
 import { AREAS, AREA_ORDER, CHIPS, MAP_STYLES, MEAL_LABEL, MODES, GOOGLE_MAPS_KEY } from '../config.js';
 import { icon } from '../icons.js';
 import { esc, fmtDay, fmtDayShort, addDays, whenParts, minutesUntil, fmtIn, debounce, hasCoords } from '../util.js';
-import { on, openPanel, closePanel, toast, neutralBadge, grab, closeBtn, seg, patch } from './core.js';
+import { on, openPanel, closePanel, toast, neutralBadge, grab, closeBtn, seg, patch, isOpen } from './core.js';
 import { ui, rerender } from '../state.js';
 import { visiblePlaces, refPoint, sortByDistance, placeRow } from './places.js';
 import { tripDays, dayArea, focusDay, nextUp, areaOf, areaByKey } from '../trip.js';
@@ -93,6 +93,25 @@ function nextRow() {
     <span class="main"><span class="name">${esc(p ? p.name : b.title)}</span><span class="meta">${esc(what)} ${esc(n.time)} · ${esc(fmtIn(mins))}</span></span>
     <span class="end"><span class="tag now">Next</span></span>
   </button>`;
+}
+
+// The part of the map that's in view: below the search bar and chips, above the place card or the list (left of the
+// card on wide screens). In the map element's own pixels, with its final size: the map and card may still be moving.
+export function clearArea(mapEl) {
+  const view = document.getElementById('view-map');
+  const top = document.getElementById('map-top');
+  if (!view || !mapEl || !view.clientHeight) return null;
+  const m = mapEl.getBoundingClientRect();
+  const v = view.getBoundingClientRect();
+  const covered = ui.wide ? 0 : parseFloat(view.style.getPropertyValue('--sheet-h')) || 0;
+  const height = mapEl.classList.contains('gmap') && !ui.wide ? v.bottom - covered - m.top : m.height; // Google's map stops at the cover
+  const box = { left: 0, right: m.width, top: top ? top.getBoundingClientRect().bottom - m.top : 0, bottom: v.bottom - covered - m.top, width: m.width, height };
+  if (ui.wide) {
+    box.bottom = m.height;
+    const card = isOpen('card') && document.querySelector('[data-panel="card"] .panel-body');
+    if (card) box.right = Math.min(box.right, card.getBoundingClientRect().left - m.left);
+  }
+  return box;
 }
 
 export function refreshMarkers() {

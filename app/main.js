@@ -5,7 +5,7 @@ import { FIREBASE_CONFIG, GOOGLE_MAPS_KEY, MAP_STYLES } from './config.js';
 import { installActions, installPanelDrag, on, refreshPanels, closePanel, isOpen, toast } from './ui/core.js';
 import { ui, onRender } from './state.js';
 import { TripMap } from './map.js';
-import { renderMapTop, renderNear, initialArea, refreshMarkers, endPick } from './ui/mapview.js';
+import { renderMapTop, renderNear, initialArea, refreshMarkers, endPick, clearArea } from './ui/mapview.js';
 import { installSheet, applySheet } from './ui/sheet.js';
 import { renderToday } from './ui/today.js';
 import { renderTrip } from './ui/trip.js';
@@ -90,6 +90,7 @@ const mapOpts = {
   onSelect: (id) => openPlace(id),
   onMapClick: () => closePanel('card'),
   onMoveEnd: () => renderNear(),
+  clearArea, // where a selected pin can be seen (see select() in map.js and gmap.js)
 };
 let lastPos = null;
 

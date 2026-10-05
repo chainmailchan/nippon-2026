@@ -260,6 +260,9 @@ Times are stored with offsets and shown in JST; flights show local time at each 
 - **Redraws:** screens and panels update in place (`patch()` in `app/ui/core.js`, never a bare `innerHTML`), so data syncing in,
   location fixes and the once-a-minute refresh never move a scroll position or close the keyboard. A location fix redraws only
   the "you are here" dot and distances, and only after a move of 20 m or more.
+- **Map in view:** `--sheet-h` on `#view-map` is how much of the map's bottom is covered — the near-me list, or an open place
+  card (the list then tucks in behind it). The Google map, map buttons and attribution stop there. A selected pin is brought
+  into the part left in view, below the search bar and chips (`clearArea()` in `app/ui/mapview.js`).
 - **Light times:** computed on device for the place and date. Golden = sun between −4° and +6°; blue = −6° to −4°. Flat horizon,
   so hills make real sunrise later — the card says so.
 - **Type:** as in the owner's Milano app — Inter for text (400–600), Fraunces for titles, headings and place names; BIZ UDPGothic for Japanese; system fonts as fallback. Section labels in sentence case.

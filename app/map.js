@@ -71,17 +71,17 @@ export class TripMap {
     if (!m) return;
     m.setIcon(this.iconFor(m._place, true));
     m.setZIndexOffset(1000);
-    if (pan) {
-      this._whenSized(() => this.cluster.zoomToShowLayer(m, () => {
-        const pt = this.map.latLngToContainerPoint(m.getLatLng());
-        const size = this.map.getSize();
-        // keep the pin in the upper half (the card covers the lower half)
-        const target = this.L.point(size.x / 2, size.y * 0.3);
-        if (Math.abs(pt.y - target.y) > size.y * 0.18 || pt.x < 40 || pt.x > size.x - 40) {
-          this.map.panBy(pt.subtract(target), { animate: true });
-        }
-      }));
-    }
+    if (pan) this._whenSized(() => this.cluster.zoomToShowLayer(m, () => this.reveal(m.getLatLng())));
+  }
+
+  // Bring a pin into the part of the map in view (see clearArea() in ui/mapview.js), unless it's already there.
+  reveal(latlng) {
+    const size = this.map.getSize();
+    let box = this.opts.clearArea && this.opts.clearArea(this.el);
+    if (!box || box.bottom - box.top < 60) box = { left: 0, right: size.x, top: 0, bottom: size.y * 0.6 };
+    const pt = this.map.latLngToContainerPoint(latlng);
+    if (pt.x > box.left + 40 && pt.x < box.right - 40 && pt.y > box.top + 30 && pt.y < box.bottom - 30) return;
+    this.map.panBy(pt.subtract(this.L.point((box.left + box.right) / 2, (box.top + box.bottom) / 2)), { animate: true });
   }
 
   // Leaflet can't move a hidden map (zero size gives NaN coordinates): measure first, and if the map

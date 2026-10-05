@@ -107,10 +107,6 @@ function makeLayer(gm, owner) {
       }
       this.div.innerHTML = html;
     }
-    containerPoint(p) {
-      const proj = this.getProjection();
-      return proj ? proj.fromLatLngToContainerPixel(new gm.LatLng(p.lat, p.lng)) : null;
-    }
   }
   return new PinLayer();
 }
@@ -147,19 +143,25 @@ export class GoogleTripMap {
     this.layer.draw();
     const p = id && this.places.find((x) => x.id === id);
     if (!p || !pan) return;
-    const keepInView = () => {
-      const pt = this.layer.containerPoint(p);
-      const w = this.el.clientWidth, h = this.el.clientHeight;
-      if (!pt || !w || !h) return;
-      // keep the pin in the upper part (the card covers the lower half)
-      const tx = w / 2, ty = h * 0.3;
-      if (Math.abs(pt.y - ty) > h * 0.18 || pt.x < 40 || pt.x > w - 40) this.map.panBy(pt.x - tx, pt.y - ty);
-    };
-    if (this.map.getZoom() < 16 && this.isClustered(id)) {
-      this.map.setZoom(16);
-      this.map.setCenter(ll(p));
-      this.gm.event.addListenerOnce(this.map, 'idle', keepInView);
-    } else keepInView();
+    this.reveal(p, this.map.getZoom() < 16 && this.isClustered(id) ? 16 : this.map.getZoom()); // a clustered pin needs a closer look
+  }
+
+  // Bring a pin into the part of the map in view (see clearArea() in ui/mapview.js), unless it's already there.
+  // Worked out in world coordinates against the map's final size: Google keeps the centre when its box resizes
+  // (the map shrinks to the card's top edge while the card slides in), so this holds whenever the resize lands.
+  reveal(p, zoom) {
+    const proj = this.map.getProjection();
+    const box = this.opts.clearArea && this.opts.clearArea(this.el);
+    if (!proj || !box || box.bottom - box.top < 60) { this.map.setZoom(zoom); this.map.panTo(ll(p)); return; }
+    const scale = 2 ** zoom;
+    const pin = proj.fromLatLngToPoint(new this.gm.LatLng(p.lat, p.lng));
+    const c = proj.fromLatLngToPoint(this.map.getCenter());
+    const x = box.width / 2 + (pin.x - c.x) * scale, y = box.height / 2 + (pin.y - c.y) * scale; // where it will sit
+    const fits = x > box.left + 40 && x < box.right - 40 && y > box.top + 30 && y < box.bottom - 30;
+    if (fits && zoom === this.map.getZoom()) return;
+    const tx = (box.left + box.right) / 2, ty = (box.top + box.bottom) / 2;
+    const center = proj.fromPointToLatLng(new this.gm.Point(pin.x - (tx - box.width / 2) / scale, pin.y - (ty - box.height / 2) / scale));
+    if (zoom !== this.map.getZoom()) { this.map.setZoom(zoom); this.map.setCenter(center); } else this.map.panTo(center);
   }
 
   isClustered(id) {

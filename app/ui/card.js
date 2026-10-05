@@ -10,24 +10,28 @@ import { placeStatus, catOf, areaOf, areaByKey, tripDays, focusDay } from '../tr
 import { refPoint, statusTags } from './places.js';
 import { lightTimes } from '../sun.js';
 import { openEditPlace } from './edit.js';
+import { applySheet } from './sheet.js';
 
 export function openPlace(id) {
   const p = store.get('places', id);
   if (!p) return;
   ui.selected = id;
   ui.cardExpanded = false;
-  if (ui.map) ui.map.select(id);
-  openPanel('card', () => cardHtml(ui.selected), {
+  const entry = openPanel('card', () => cardHtml(ui.selected), {
     kind: 'card',
-    onClose: () => { ui.selected = null; if (ui.map) ui.map.select(null); },
+    onClose: () => { ui.selected = null; if (ui.map) ui.map.select(null); applySheet(); },
     expand: { get: () => ui.cardExpanded, set: (v) => { ui.cardExpanded = v; setCardSize(); } },
   });
+  // The map ends where the card starts; follow the card when it's expanded or collapsed.
+  entry.wrap.querySelector('.panel-body').addEventListener('transitionend', (e) => { if (e.propertyName === 'height') applySheet(); });
   setCardSize();
+  if (ui.map) ui.map.select(id); // with the card in place, so the pin lands in the map above it
 }
 
 function setCardSize() {
   const w = document.querySelector('[data-panel="card"]');
   if (w) w.classList.toggle('expanded', ui.cardExpanded);
+  applySheet();
 }
 
 function modeFor(p) {

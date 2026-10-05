@@ -1,6 +1,6 @@
 // App-wide constants. Nothing private belongs in this file: the repo is public.
 
-export const APP_VERSION = '0.2.1';
+export const APP_VERSION = '0.2.2';
 
 // Firebase web config (not secret — access is controlled by Firestore rules and the trip key).
 // Set to null to run in "this device only" mode.
