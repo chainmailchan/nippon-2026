@@ -137,6 +137,7 @@ interface Place {
   station?: string;
   coord?: "source" | "gsi" | "osm" | "pin" | "link";  // where the pin came from
   phone?: string; website?: string;
+  mapcode?: string;                   // MAPCODE for Japanese car navigation, e.g. "72 820 265*66" (shown with Copy)
   summary?: string;                   // one line on the card
   order?: string;                     // what to order
   notes?: string;                     // ours
@@ -177,13 +178,15 @@ interface Booking {
   party?: number;
 }
 
-interface Item {                      // itinerary entries that aren't bookings
-  id: string; date: string; time?: string;
-  kind: "slot" | "task" | "note" | "flexible";
+interface Item {                      // the day plan: timed entries that aren't bookings (Today and Trip views)
+  id: string; date: string;
+  time?: string; end?: string;        // "HH:MM", local time
+  kind: "stop" | "drive" | "note";    // a visit, a drive, anything else
   title: string;
-  slot?: "breakfast" | "lunch" | "dinner";
-  place_ids?: string[];               // candidates for an open slot
-  done?: boolean;
+  place_ids?: string[];               // the first is linked: tapping the row opens it
+  meal?: "breakfast" | "lunch" | "dinner"; // a meal stop: that meal no longer shows as open
+  label?: string;                     // e.g. "Priority", "Optional" — shown as a tag ("Fixed"/"Planned" stay quiet)
+  notes?: string;
 }
 
 interface ListItem {

@@ -12,7 +12,9 @@ import { openPlace } from './card.js';
 import { goToArea } from './mapview.js';
 
 const PLAN_LABEL = { am: 'Morning', pm: 'Afternoon', night: 'Evening' };
-const KIND_GLYPH = { checkin: 'bed', checkout: 'bed', depart: 'plane', arrive: 'plane', pickup: 'car', return: 'car', meal: 'utensils', ticket: 'ticket', other: 'calendar' };
+const KIND_GLYPH = { checkin: 'bed', checkout: 'bed', depart: 'plane', arrive: 'plane', pickup: 'car', return: 'car', meal: 'utensils', ticket: 'ticket', other: 'calendar', drive: 'car', stop: 'pin', note: 'calendar' };
+// Day-plan labels worth showing ("Fixed" and "Planned" are the default and stay quiet).
+const LABEL_TAG = (l) => (!l || /^(fixed|planned)$/i.test(l) ? '' : `<span class="tag ${/^priority$/i.test(l) ? 'now' : 'neutral'}">${esc(l)}</span>`);
 
 function mask(ref) { const s = String(ref); return s.length <= 4 ? '••••' : '•'.repeat(Math.min(s.length - 4, 8)) + s.slice(-4); }
 
@@ -36,14 +38,16 @@ export function entryRow(e, day, { compact = false } = {}) {
   }
   const b = e.booking;
   const p = e.place;
-  const glyphBadge = p ? badge(p.category, 'sm') : neutralBadge(KIND_GLYPH[e.kind] || 'calendar', 'sm');
+  const glyphBadge = p && e.kind !== 'drive' ? badge(p.category, 'sm') : neutralBadge(KIND_GLYPH[e.kind] || 'calendar', 'sm'); // a drive shows the car, and still opens where it's going
   const sub = [];
+  if (e.end) sub.push(`Until ${esc(e.end)}`);
   if (e.sub) sub.push(esc(e.sub));
+  if (e.note && !compact) sub.push(esc(e.note));
   if (b && b.details && !compact) sub.push(esc(b.details));
   if (b && b.ref && !compact) sub.push(`Ref <span class="masked">${esc(ui.revealed.has(b.id) ? b.ref : mask(b.ref))}</span>`);
   if (b && b.notes && !compact) sub.push(esc(b.notes));
   if (e.kind === 'plan') sub.push(e.option ? 'Option' : 'Planned');
-  const tags = b ? (b.status === 'to_cancel' ? '<span class="tag hold">To cancel</span>' : b.status === 'hold' ? '<span class="tag hold">Held</span>' : '') : '';
+  const tags = b ? (b.status === 'to_cancel' ? '<span class="tag hold">To cancel</span>' : b.status === 'hold' ? '<span class="tag hold">Held</span>' : '') : LABEL_TAG(e.label);
   const open = p ? `data-action="open-from-list" data-id="${esc(p.id)}"` : '';
   return `<div class="tli${e.option && !compact ? ' opt' : ''}"><span class="${timeCls}">${esc(time || (e.option && !compact ? '' : '—'))}</span>
     <${p ? 'button type="button"' : 'div'} class="what${p ? ' tap' : ''}" ${open}>${glyphBadge}<span class="main"><span class="ttl">${esc(e.title)}</span>${sub.length ? `<span class="t-sec">${sub.join(' · ')}</span>` : ''}${tags ? `<span class="tags">${tags}</span>` : ''}</span></${p ? 'button' : 'div'}></div>`;

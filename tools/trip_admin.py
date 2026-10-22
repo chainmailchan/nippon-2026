@@ -143,7 +143,7 @@ def main():
 
     if a.command == 'list':
         for d in sorted(trip.all(a.args[0]), key=lambda d: d['id']):
-            print(d['id'], '·', d.get('name') or d.get('title') or '', '·', d.get('start') or d.get('status') or d.get('list') or '')
+            print(d['id'], '·', d.get('name') or d.get('title') or '', '·', d.get('start') or d.get('status') or d.get('list') or ' '.join(filter(None, [d.get('date'), d.get('time')])))
     elif a.command == 'get':
         print(json.dumps(trip.get(a.args[0], a.args[1]), ensure_ascii=False, indent=1))
     elif a.command == 'put':

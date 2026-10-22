@@ -158,15 +158,22 @@ export function dayTimeline(day) {
   for (const it of store.all('lists')) {
     if (it.due === day) push({ kind: 'task', time: null, sort: '07:00', title: it.title, item: it });
   }
+  // The day plan: timed stops, drives and notes (items collection).
+  for (const it of store.all('items')) {
+    if (it.date !== day) continue;
+    const place = (it.place_ids || []).map((id) => store.get('places', id)).find(Boolean) || null;
+    push({ kind: it.kind || 'note', time: it.time || null, end: it.end || null, sort: it.time || '12:00', title: it.title, note: it.notes || '', label: it.label || '', place });
+  }
   for (const m of mealSlots(day)) {
-    if (m.coveredBy !== 'booking') push({ kind: 'slot', meal: m.meal, sort: MEAL_TIME[m.meal], time: null, covered: m.coveredBy === 'base', options: m.options, base: m.base, title: MEAL_LABEL[m.meal] });
+    if (m.coveredBy !== 'booking' && m.coveredBy !== 'plan') push({ kind: 'slot', meal: m.meal, sort: MEAL_TIME[m.meal], time: null, covered: m.coveredBy === 'base', options: m.options, base: m.base, title: MEAL_LABEL[m.meal] });
   }
   out.sort((a, b) => (a.sort || '').localeCompare(b.sort || ''));
   return out;
 }
 
-// Which meals are covered on `day`: 'base' (the hotel's), 'booking', 'options' (places added to the meal,
-// nothing booked yet), 'travel' (flight), or null (open). `options` counts the places added to each meal.
+// Which meals are covered on `day`: 'base' (the hotel's), 'booking', 'plan' (a stop in the day plan), 'options'
+// (places added to the meal, nothing booked yet), 'travel' (flight), or null (open). `options` counts the places
+// added to each meal.
 export function mealSlots(day) {
   const r = tripRange();
   if (!r || day < r.day1 || day > r.end) return [];
@@ -179,6 +186,9 @@ export function mealSlots(day) {
   for (const b of activeBookings()) {
     if (b.kind !== 'meal') continue;
     if (whenParts(b.start).date === day) { const m = bookingMeal(b); if (m && !covered[m]) covered[m] = 'booking'; }
+  }
+  for (const it of store.all('items')) {
+    if (it.date === day && MEALS.includes(it.meal) && !covered[it.meal]) covered[it.meal] = 'plan';
   }
   const options = { breakfast: 0, lunch: 0, dinner: 0 };
   for (const p of store.all('places')) {

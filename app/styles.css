@@ -253,6 +253,9 @@ main { position: relative; flex: 1; min-height: 0; }
 .qa > .on { background: var(--ink); color: var(--surface); }
 .qa > [disabled] { opacity: .4; }
 .modes { display: flex; gap: 6px; padding: 8px var(--pad) 0; justify-content: flex-end; }
+.navcode { display: flex; align-items: center; gap: 10px; margin: 12px var(--pad) 0; padding: 10px 10px 10px 14px; border-radius: 12px; background: var(--sunken); }
+.navcode b { font-size: 20px; letter-spacing: .02em; }
+.navcode .btn { flex: none; }
 .mini { border: 0; background: transparent; color: var(--muted); font-size: 13px; font-weight: 600; height: 32px; padding: 0 10px; border-radius: 8px; }
 .mini.on { background: var(--sunken); color: var(--ink); }
 .minis { display: flex; gap: 8px; }

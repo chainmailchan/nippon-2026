@@ -145,6 +145,7 @@ function cardHtml(id) {
       <a class="btn out" href="${esc(gmPlaceUrl(p, prefs.linkMode))}" target="_blank" rel="noopener">${icon('external', 's')}Google Maps</a>
       <a class="btn pri" href="${esc(gmDirUrl(p, MODES[mode].gm, prefs.linkMode))}" target="_blank" rel="noopener">${icon('navigation', 's')}Directions <span class="sub">${esc(MODES[mode].label)}</span></a>
     </div>
+    ${p.mapcode ? `<div class="navcode"><span class="vstack grow"><span class="t-cap">MAPCODE · car navigation</span><b class="num">${esc(p.mapcode)}</b></span><button type="button" class="btn sm sec" data-action="copy-mapcode" data-id="${esc(p.id)}">${icon('copy', 's')}Copy</button></div>` : ''}
     <div class="modes">${Object.entries(MODES).map(([k, m]) => `<button type="button" class="mini${k === mode ? ' on' : ''}" data-action="set-mode" data-area="${esc(a ? a.key : '')}" data-value="${k}">${esc(m.label)}</button>`).join('')}</div>
 
     <div class="qa">
@@ -266,6 +267,11 @@ on('pick-option', (d) => {
 on('unplan', (d) => { const p = store.get('places', d.id); const { planned, ...rest } = p; store.put('places', rest); });
 on('edit-place', (d) => openEditPlace(d.id));
 on('place-more', (d) => openPanel('more', () => moreHtml(d.id)));
+on('copy-mapcode', async (d) => {
+  const p = store.get('places', d.id);
+  if (!p || !p.mapcode) return;
+  try { await navigator.clipboard.writeText(p.mapcode); toast('MAPCODE copied'); } catch (e) { toast('Copy not allowed here'); }
+});
 on('copy-coords', async (d) => {
   const p = store.get('places', d.id);
   if (!hasCoords(p)) { toast('No pin yet'); return; }

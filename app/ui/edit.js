@@ -58,6 +58,7 @@ function placeForm() {
     <div class="field"><label>Priority</label>${seg('Priority', [['must', 'Must'], ['want', 'Want'], ['maybe', 'Maybe']], d.priority || 'want', 'draft-priority')}</div>
     ${field('One-line summary', 'summary', d.summary, { ph: 'What it is, what to order' })}
     ${field('Notes', 'notes', d.notes, { area: true })}
+    ${field('MAPCODE (car navigation)', 'mapcode', d.mapcode, { ph: 'e.g. 72 820 265*66' })}
     <details class="more"><summary>Hours, price, phone</summary>
       ${field('Hours', 'hours', d.practical.hours)}${field('Closed', 'closed', d.practical.closed, { ph: 'e.g. Mondays' })}
       ${field('Price', 'price', d.practical.price)}${field('Booking', 'reservation', d.practical.reservation, { ph: 'required / walk-in / how' })}
@@ -95,7 +96,7 @@ async function mountPicker(body) {
 function setCoordLine(t) { const el = document.getElementById('coordline'); if (el) el.textContent = t; }
 function val(name) { const el = document.querySelector(`[data-panel="edit-place"] [name="${name}"]`); return el ? el.value.trim() : ''; }
 function syncInputs() {
-  for (const k of ['name', 'romaji', 'ja', 'address_en', 'address_ja', 'summary', 'notes', 'phone', 'website']) draft[k] = val(k);
+  for (const k of ['name', 'romaji', 'ja', 'address_en', 'address_ja', 'summary', 'notes', 'phone', 'website', 'mapcode']) draft[k] = val(k);
   draft.gmaps.url = val('gmurl');
   for (const k of ['hours', 'closed', 'price', 'reservation']) draft.practical[k] = val(k);
   for (const k of ['shot', 'best_time', 'access', 'rules', 'video', 'gear']) draft.photo[k] = val(k);
