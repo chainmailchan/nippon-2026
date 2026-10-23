@@ -158,11 +158,15 @@ export function dayTimeline(day) {
   for (const it of store.all('lists')) {
     if (it.due === day) push({ kind: 'task', time: null, sort: '07:00', title: it.title, item: it });
   }
-  // The day plan: timed stops, drives and notes (items collection).
-  for (const it of store.all('items')) {
-    if (it.date !== day) continue;
+  // The day plan: stops, drives and notes (items collection) in plan order (by id). A row without a time
+  // follows the row before it; a first row with a meal sits at that meal's usual time.
+  let prev = null;
+  for (const it of store.all('items').filter((x) => x.date === day).sort((a, b) => a.id.localeCompare(b.id))) {
     const place = (it.place_ids || []).map((id) => store.get('places', id)).find(Boolean) || null;
-    push({ kind: it.kind || 'note', time: it.time || null, end: it.end || null, sort: it.time || '12:00', title: it.title, note: it.notes || '', label: it.label || '', place });
+    const meal = MEALS.includes(it.meal) ? it.meal : null;
+    const sort = it.time || (prev ? prev + '~' : meal ? MEAL_TIME[meal] : '12:00');
+    prev = sort;
+    push({ kind: it.kind || 'note', time: it.time || null, end: it.end || null, sort, title: it.title, note: it.notes || '', label: it.label || '', meal, dayplan: true, place });
   }
   for (const m of mealSlots(day)) {
     if (m.coveredBy !== 'booking' && m.coveredBy !== 'plan') push({ kind: 'slot', meal: m.meal, sort: MEAL_TIME[m.meal], time: null, covered: m.coveredBy === 'base', options: m.options, base: m.base, title: MEAL_LABEL[m.meal] });

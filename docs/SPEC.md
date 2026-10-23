@@ -178,7 +178,8 @@ interface Booking {
   party?: number;
 }
 
-interface Item {                      // the day plan: timed entries that aren't bookings (Today and Trip views)
+interface Item {                      // the day plan: entries that aren't bookings (Today and Trip views), in id order;
+                                      // one without a time follows the one before it
   id: string; date: string;
   time?: string; end?: string;        // "HH:MM", local time
   kind: "stop" | "drive" | "note";    // a visit, a drive, anything else

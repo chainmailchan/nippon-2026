@@ -21,7 +21,7 @@ function mask(ref) { const s = String(ref); return s.length <= 4 ? '••••
 // compact: Trip view and the Tomorrow preview, where meal headers aren't shown, so options carry the meal name.
 export function entryRow(e, day, { compact = false } = {}) {
   const planLabel = e.kind === 'plan' && e.slotLabel && !(e.option && !compact) ? (MEAL_LABEL[e.slotLabel] || PLAN_LABEL[e.slotLabel] || e.slotLabel) : '';
-  const time = e.time || planLabel || (e.kind === 'slot' ? MEAL_LABEL[e.meal] : '');
+  const time = e.time || planLabel || (e.kind === 'slot' || (e.dayplan && e.meal) ? MEAL_LABEL[e.meal] : '');
   const timeCls = e.time ? 'time' : 'time na';
   if (e.kind === 'slot') {
     if (e.covered) {
